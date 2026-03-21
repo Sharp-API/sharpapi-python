@@ -14,7 +14,7 @@ Example::
     # +EV opportunities
     evs = client.ev.get(min_ev=3.0, league="nba")
     for opp in evs.data:
-        print(f"+{opp.ev_percent}% on {opp.selection} @ {opp.sportsbook}")
+        print(f"+{opp.ev_percentage}% on {opp.selection} @ {opp.sportsbook}")
 """
 
 from .async_client import AsyncSharpAPI
@@ -51,7 +51,7 @@ from .models import (
 from .streaming import EventStream
 from ._utils import american_to_decimal, american_to_probability, decimal_to_american
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     # Clients

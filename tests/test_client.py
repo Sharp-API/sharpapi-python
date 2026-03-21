@@ -260,8 +260,8 @@ class TestEVResource:
             assert len(result.data) == 1
             ev = result.data[0]
             assert isinstance(ev, EVOpportunity)
-            assert ev.ev_percent == 4.2
-            assert ev.kelly_fraction == 0.021
+            assert ev.ev_percentage == 4.2
+            assert ev.kelly_percent == 0.021
 
 
 class TestMiddlesResource:

@@ -27,9 +27,9 @@ for arb in arbs.data:
 # --- +EV opportunities ---
 evs = client.ev.get(min_ev=3.0, sport="basketball")
 for opp in evs.data:
-    print(f"+{opp.ev_percent:.1f}% EV on {opp.selection} @ {opp.sportsbook}")
-    if opp.kelly_fraction:
-        print(f"  Kelly: {opp.kelly_fraction:.1%} of bankroll")
+    print(f"+{opp.ev_percentage:.1f}% EV on {opp.selection} @ {opp.sportsbook}")
+    if opp.kelly_percent:
+        print(f"  Kelly: {opp.kelly_percent:.1%} of bankroll")
 
 # --- Best odds across books ---
 odds = client.odds.best(league="nba", market="moneyline")
@@ -47,7 +47,7 @@ stream = client.stream.opportunities(league="nba")
 @stream.on("ev:detected")
 def on_ev(data):
     for opp in data:
-        print(f"+EV: {opp['selection']} {opp['ev_percent']}% @ {opp['sportsbook']}")
+        print(f"+EV: {opp['selection']} {opp['ev_percentage']}% @ {opp['sportsbook']}")
 
 @stream.on("arb:detected")
 def on_arb(data):

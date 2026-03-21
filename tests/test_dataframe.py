@@ -22,7 +22,7 @@ class TestToDataFrame:
         result = parse_response(EV_RESPONSE, EVOpportunity)
         df = result.to_dataframe()
         assert len(df) == 1
-        assert df.iloc[0]["ev_percent"] == 4.2
+        assert df.iloc[0]["ev_percentage"] == 4.2
         assert df.iloc[0]["sportsbook"] == "draftkings"
 
     def test_flattens_nested_dicts(self):
@@ -60,24 +60,24 @@ class TestToDataFrame:
                     "id": "ev_1", "sport": "basketball", "league": "nba",
                     "selection": "A", "sportsbook": "dk",
                     "odds_american": -110, "odds_decimal": 1.909,
-                    "ev_percent": 4.2, "possibly_stale": False, "warnings": [],
+                    "ev_percentage": 4.2, "possibly_stale": False, "warnings": [],
                 },
                 {
                     "id": "ev_2", "sport": "basketball", "league": "nba",
                     "selection": "B", "sportsbook": "fd",
                     "odds_american": 130, "odds_decimal": 2.3,
-                    "ev_percent": 2.8, "possibly_stale": False, "warnings": [],
+                    "ev_percentage": 2.8, "possibly_stale": False, "warnings": [],
                 },
             ],
         }
         result = parse_response(multi, EVOpportunity)
         df = result.to_dataframe()
         assert len(df) == 2
-        assert list(df["ev_percent"]) == [4.2, 2.8]
+        assert list(df["ev_percentage"]) == [4.2, 2.8]
         assert list(df["sportsbook"]) == ["dk", "fd"]
 
     def test_dataframe_dtypes(self):
         result = parse_response(EV_RESPONSE, EVOpportunity)
         df = result.to_dataframe()
-        assert df["ev_percent"].dtype == "float64"
+        assert df["ev_percentage"].dtype == "float64"
         assert "str" in str(df["sportsbook"].dtype).lower() or df["sportsbook"].dtype == "object"

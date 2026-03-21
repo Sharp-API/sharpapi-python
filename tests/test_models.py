@@ -74,7 +74,7 @@ class TestEVModel:
         result = parse_response(EV_RESPONSE, EVOpportunity)
         assert len(result.data) == 1
         ev = result.data[0]
-        assert ev.ev_percent == 4.2
+        assert ev.ev_percentage == 4.2
         assert ev.selection == "PHO Suns"
         assert ev.sportsbook == "draftkings"
         assert ev.odds_american == -105
@@ -84,15 +84,15 @@ class TestEVModel:
         result = parse_response(EV_RESPONSE, EVOpportunity)
         ev = result.data[0]
         assert ev.devig_method == "power"
-        assert ev.devig_book == "pinnacle"
+        assert ev.sharp_book == "pinnacle"
         assert ev.no_vig_odds == 1.912
-        assert ev.true_probability == 0.523
+        assert ev.fair_probability == 0.523
 
     def test_scoring(self):
         result = parse_response(EV_RESPONSE, EVOpportunity)
         ev = result.data[0]
         assert ev.confidence_score == 87
-        assert ev.kelly_fraction == 0.021
+        assert ev.kelly_percent == 0.021
         assert ev.book_count == 8
 
     def test_aliased_fields(self):

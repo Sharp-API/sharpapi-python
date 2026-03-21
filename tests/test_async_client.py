@@ -174,7 +174,7 @@ class TestAsyncOpportunities:
             result = await client.ev.get(min_ev=3.0)
             assert len(result.data) == 1
             assert isinstance(result.data[0], EVOpportunity)
-            assert result.data[0].ev_percent == 4.2
+            assert result.data[0].ev_percentage == 4.2
 
 
 # =============================================================================

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Generic, List, Optional, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 
 T = TypeVar("T")
 
@@ -171,14 +171,22 @@ class EVOpportunity(BaseModel):
     odds_american: int | float
     odds_decimal: float
     no_vig_odds: Optional[float] = None
-    true_probability: Optional[float] = None
-    ev_percent: float = Field(alias="ev_percent")
-    kelly_fraction: Optional[float] = None
+    fair_probability: Optional[float] = Field(
+        None, validation_alias=AliasChoices("fair_probability", "true_probability")
+    )
+    ev_percentage: float = Field(
+        validation_alias=AliasChoices("ev_percentage", "ev_percent")
+    )
+    kelly_percent: Optional[float] = Field(
+        None, validation_alias=AliasChoices("kelly_percent", "kelly_fraction")
+    )
     confidence_score: Optional[float] = None
     book_count: Optional[int] = None
     market_width: Optional[float] = None
     devig_method: Optional[str] = None
-    devig_book: Optional[str] = None
+    sharp_book: Optional[str] = Field(
+        None, validation_alias=AliasChoices("sharp_book", "devig_book")
+    )
     sharp_odds_american: Optional[int | float] = None
     sharp_odds_decimal: Optional[float] = None
     line: Optional[float] = None

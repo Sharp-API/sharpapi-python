@@ -52,7 +52,7 @@ class SharpAPI:
         # Get +EV opportunities
         evs = client.ev.get(min_ev=3.0, league="nba")
         for opp in evs.data:
-            print(f"+{opp.ev_percent}% on {opp.selection} @ {opp.sportsbook}")
+            print(f"+{opp.ev_percentage}% on {opp.selection} @ {opp.sportsbook}")
 
         # Stream real-time updates
         stream = client.stream.opportunities(league="nba")

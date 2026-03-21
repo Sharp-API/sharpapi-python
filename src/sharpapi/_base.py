@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import httpx
 
 from .exceptions import (
@@ -17,7 +15,7 @@ from .models import APIResponse, RateLimitInfo, ResponseMeta
 
 DEFAULT_BASE_URL = "https://api.sharpapi.io"
 DEFAULT_TIMEOUT = 30.0
-USER_AGENT = "sharpapi-python/0.1.0"
+USER_AGENT = "sharpapi-python/0.2.0"
 
 
 def parse_response(raw: dict, model_class: type) -> APIResponse:
