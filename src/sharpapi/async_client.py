@@ -442,11 +442,6 @@ class _AsyncEventsResource:
         raw = data.get("data", data)
         return Event.model_validate(raw)
 
-    async def search(self, query: str) -> APIResponse[list[Event]]:
-        """Search events by name."""
-        data = await self._client._get("/events/search", {"q": query})
-        return parse_response(data, Event)
-
 
 class _AsyncAccountResource:
     def __init__(self, client: AsyncSharpAPI):

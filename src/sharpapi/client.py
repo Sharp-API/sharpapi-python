@@ -555,11 +555,6 @@ class _EventsResource:
         raw = data.get("data", data)
         return Event.model_validate(raw)
 
-    def search(self, query: str) -> APIResponse[list[Event]]:
-        """Search events by name."""
-        data = self._client._get("/events/search", {"q": query})
-        return _parse_response(data, Event)
-
 
 class _AccountResource:
     def __init__(self, client: SharpAPI):

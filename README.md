@@ -85,7 +85,6 @@ client.sports.list()
 client.leagues.list(sport="basketball")
 client.sportsbooks.list()
 client.events.list(league="nba", live=True)
-client.events.search("Lakers")
 
 # Account
 client.account.me()       # Tier, limits, features

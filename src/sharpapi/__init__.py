@@ -51,7 +51,7 @@ from .models import (
 from .streaming import EventStream
 from ._utils import american_to_decimal, american_to_probability, decimal_to_american
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 __all__ = [
     # Clients

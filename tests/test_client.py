@@ -347,15 +347,6 @@ class TestReferenceResources:
             assert len(result.data) == 1
 
     @respx.mock
-    def test_events_search(self):
-        respx.get(f"{BASE_URL}/api/v1/events/search").mock(
-            return_value=Response(200, json=EVENTS_RESPONSE)
-        )
-        with SharpAPI(API_KEY) as client:
-            result = client.events.search("Lakers")
-            assert len(result.data) == 1
-
-    @respx.mock
     def test_account_me(self):
         respx.get(f"{BASE_URL}/api/v1/account").mock(
             return_value=Response(200, json=ACCOUNT_RESPONSE)
