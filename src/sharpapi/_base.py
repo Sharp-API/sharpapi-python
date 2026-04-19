@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import random
+
 import httpx
 
 from .exceptions import (
@@ -16,6 +18,24 @@ from .models import APIResponse, RateLimitInfo, ResponseMeta
 DEFAULT_BASE_URL = "https://api.sharpapi.io"
 DEFAULT_TIMEOUT = 30.0
 USER_AGENT = "sharpapi-python/0.2.0"
+
+RETRY_STATUSES = frozenset({502, 503, 504})
+RETRY_MAX_ATTEMPTS = 3
+RETRY_BASE_DELAY = 0.5
+RETRY_MAX_DELAY = 4.0
+
+
+def should_retry(response: httpx.Response | None, exc: Exception | None) -> bool:
+    """True for transient upstream failures worth retrying."""
+    if exc is not None:
+        return isinstance(exc, (httpx.ConnectError, httpx.ReadError, httpx.RemoteProtocolError))
+    return response is not None and response.status_code in RETRY_STATUSES
+
+
+def retry_delay(attempt: int) -> float:
+    """Exponential backoff with full jitter. attempt is 1-indexed."""
+    ceiling = min(RETRY_BASE_DELAY * (2 ** (attempt - 1)), RETRY_MAX_DELAY)
+    return random.uniform(0, ceiling)
 
 
 def parse_response(raw: dict, model_class: type) -> APIResponse:
