@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any, Optional, Union
 
 import httpx
@@ -9,10 +10,13 @@ import httpx
 from ._base import (
     DEFAULT_BASE_URL,
     DEFAULT_TIMEOUT,
+    RETRY_MAX_ATTEMPTS,
     handle_errors,
     make_headers,
     parse_rate_limit,
     parse_response,
+    retry_delay,
+    should_retry,
 )
 from ._utils import _clean_params
 from .models import (
@@ -99,11 +103,26 @@ class SharpAPI:
         return self._last_rate_limit
 
     def _request(self, method: str, path: str, params: dict | None = None, **kwargs) -> Any:
-        """Make an API request and return parsed JSON."""
+        """Make an API request and return parsed JSON. Retries 502/503/504 with jittered backoff."""
         if params:
             params = _clean_params(params)
 
-        response = self._http.request(method, path, params=params, **kwargs)
+        response: httpx.Response | None = None
+        for attempt in range(1, RETRY_MAX_ATTEMPTS + 1):
+            exc: Exception | None = None
+            try:
+                response = self._http.request(method, path, params=params, **kwargs)
+            except (httpx.ConnectError, httpx.ReadError, httpx.RemoteProtocolError) as e:
+                exc = e
+
+            if attempt < RETRY_MAX_ATTEMPTS and should_retry(response, exc):
+                time.sleep(retry_delay(attempt))
+                continue
+            if exc is not None:
+                raise exc
+            break
+
+        assert response is not None
         self._last_rate_limit = parse_rate_limit(response)
         handle_errors(response)
         return response.json()
