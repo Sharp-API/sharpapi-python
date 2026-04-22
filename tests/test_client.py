@@ -382,6 +382,20 @@ class TestAuthHeader:
         with SharpAPI(API_KEY) as client:
             client.sports.list()
             assert route.calls[0].request.headers["x-api-key"] == API_KEY
+            # Bearer must NOT be sent in the default mode.
+            assert "authorization" not in route.calls[0].request.headers
+
+    @respx.mock
+    def test_bearer_auth_method_sends_authorization(self):
+        route = respx.get(f"{BASE_URL}/api/v1/sports").mock(
+            return_value=Response(200, json=SPORTS_RESPONSE)
+        )
+        with SharpAPI(API_KEY, auth_method="bearer") as client:
+            client.sports.list()
+            req = route.calls[0].request
+            assert req.headers["authorization"] == f"Bearer {API_KEY}"
+            # X-API-Key must NOT be sent in bearer mode.
+            assert "x-api-key" not in req.headers
 
     @respx.mock
     def test_user_agent_sent(self):

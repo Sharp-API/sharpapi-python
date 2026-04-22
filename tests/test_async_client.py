@@ -223,3 +223,16 @@ class TestAsyncAuthHeader:
         async with AsyncSharpAPI(API_KEY) as client:
             await client.sports.list()
             assert route.calls[0].request.headers["x-api-key"] == API_KEY
+            assert "authorization" not in route.calls[0].request.headers
+
+    @pytest.mark.asyncio
+    @respx.mock
+    async def test_bearer_auth_method_sends_authorization(self):
+        route = respx.get(f"{BASE_URL}/api/v1/sports").mock(
+            return_value=Response(200, json=SPORTS_RESPONSE)
+        )
+        async with AsyncSharpAPI(API_KEY, auth_method="bearer") as client:
+            await client.sports.list()
+            req = route.calls[0].request
+            assert req.headers["authorization"] == f"Bearer {API_KEY}"
+            assert "x-api-key" not in req.headers

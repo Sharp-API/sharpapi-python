@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+from typing import Literal
 
 import httpx
 
@@ -19,7 +20,12 @@ from .models import APIResponse, RateLimitInfo, ResponseMeta
 
 DEFAULT_BASE_URL = "https://api.sharpapi.io"
 DEFAULT_TIMEOUT = 30.0
-USER_AGENT = "sharpapi-python/0.2.4"
+USER_AGENT = "sharpapi-python/0.2.5"
+
+# Supported REST authentication methods. SSE always uses ``?api_key=`` query
+# regardless of this setting because EventSource cannot set custom headers.
+AuthMethod = Literal["x-api-key", "bearer"]
+DEFAULT_AUTH_METHOD: AuthMethod = "x-api-key"
 
 RETRY_STATUSES = frozenset({502, 503, 504})
 RETRY_MAX_ATTEMPTS = 3
@@ -138,13 +144,28 @@ def handle_errors(response: httpx.Response) -> None:
         raise SharpAPIError(error_msg, code=code, status=status)
 
 
-def make_headers(api_key: str) -> dict[str, str]:
-    """Build default request headers."""
-    return {
-        "X-API-Key": api_key,
+def make_headers(
+    api_key: str,
+    auth_method: AuthMethod = DEFAULT_AUTH_METHOD,
+) -> dict[str, str]:
+    """Build default request headers.
+
+    Args:
+        api_key: The SharpAPI key (e.g. ``sk_live_...``).
+        auth_method: Either ``"x-api-key"`` (default — sends an
+            ``X-API-Key`` header) or ``"bearer"`` (sends
+            ``Authorization: Bearer <key>``). Useful when proxies, IAM
+            layers, or SSO gateways strip non-standard custom headers.
+    """
+    headers: dict[str, str] = {
         "Content-Type": "application/json",
         "User-Agent": USER_AGENT,
     }
+    if auth_method == "bearer":
+        headers["Authorization"] = f"Bearer {api_key}"
+    else:
+        headers["X-API-Key"] = api_key
+    return headers
 
 
 def _int_or_none(value: str | None) -> int | None:

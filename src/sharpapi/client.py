@@ -8,9 +8,11 @@ from typing import Any
 import httpx
 
 from ._base import (
+    DEFAULT_AUTH_METHOD,
     DEFAULT_BASE_URL,
     DEFAULT_TIMEOUT,
     RETRY_MAX_ATTEMPTS,
+    AuthMethod,
     handle_errors,
     make_headers,
     parse_rate_limit,
@@ -45,11 +47,25 @@ class SharpAPI:
     Provides typed access to odds, +EV, arbitrage, middles, and streaming
     endpoints.
 
+    Args:
+        api_key: Your SharpAPI key (e.g. ``sk_live_...``).
+        base_url: Override the API base URL (defaults to production).
+        timeout: HTTP timeout in seconds.
+        auth_method: How to send the API key on REST requests. ``"x-api-key"``
+            (default) sends the ``X-API-Key`` header. ``"bearer"`` sends
+            ``Authorization: Bearer <key>`` instead — useful when running
+            behind IAM layers, SSO, or API gateways that strip custom
+            headers. SSE streams always authenticate via ``?api_key=`` query
+            (EventSource cannot set headers) and are unaffected.
+
     Example::
 
         from sharpapi import SharpAPI
 
         client = SharpAPI("sk_live_xxx")
+
+        # Or, behind a proxy that requires standard Bearer auth:
+        client = SharpAPI("sk_live_xxx", auth_method="bearer")
 
         # Get arbitrage opportunities
         arbs = client.arbitrage.get(min_profit=1.0)
@@ -73,16 +89,18 @@ class SharpAPI:
         *,
         base_url: str = DEFAULT_BASE_URL,
         timeout: float = DEFAULT_TIMEOUT,
+        auth_method: AuthMethod = DEFAULT_AUTH_METHOD,
     ):
         if not api_key:
             raise ValueError("api_key is required")
 
         self._api_key = api_key
+        self._auth_method: AuthMethod = auth_method
         self._base_url = base_url.rstrip("/")
         self._timeout = timeout
         self._http = httpx.Client(
             base_url=f"{self._base_url}/api/v1",
-            headers=make_headers(api_key),
+            headers=make_headers(api_key, auth_method),
             timeout=timeout,
         )
         self._last_rate_limit = RateLimitInfo()
