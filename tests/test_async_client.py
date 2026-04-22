@@ -15,7 +15,9 @@ from sharpapi import (
     RateLimitedError,
     Sport,
 )
+
 from .conftest import (
+    ACCOUNT_RESPONSE,
     API_KEY,
     ARBITRAGE_RESPONSE,
     BASE_URL,
@@ -25,9 +27,7 @@ from .conftest import (
     ODDS_RESPONSE,
     RATE_LIMIT_HEADERS,
     SPORTS_RESPONSE,
-    ACCOUNT_RESPONSE,
 )
-
 
 # =============================================================================
 # Async Client Lifecycle
@@ -202,6 +202,8 @@ class TestAsyncReferenceData:
         )
         async with AsyncSharpAPI(API_KEY) as client:
             info = await client.account.me()
+            assert info.key is not None
+            assert info.features is not None
             assert info.key["tier"] == "pro"
             assert info.features.ev is True
 

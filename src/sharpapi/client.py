@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Optional, Union
+from typing import Any
 
 import httpx
 
@@ -20,18 +20,18 @@ from ._base import (
 )
 from ._utils import _clean_params
 from .models import (
-    APIResponse,
     AccountInfo,
+    APIResponse,
     ArbitrageOpportunity,
-    EVOpportunity,
     Event,
+    EVOpportunity,
     League,
     LowHoldOpportunity,
     MiddleOpportunity,
     OddsLine,
     RateLimitInfo,
-    Sportsbook,
     Sport,
+    Sportsbook,
 )
 from .streaming import EventStream
 
@@ -158,18 +158,18 @@ class _OddsResource:
     def get(
         self,
         *,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        add_sportsbook: Optional[Union[str, list[str]]] = None,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        event: Optional[Union[str, list[str]]] = None,
-        live: Optional[bool] = None,
-        sort: Optional[str] = None,
-        group_by: Optional[str] = None,
-        fields: Optional[Union[str, list[str]]] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sportsbook: str | list[str] | None = None,
+        add_sportsbook: str | list[str] | None = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        event: str | list[str] | None = None,
+        live: bool | None = None,
+        sort: str | None = None,
+        group_by: str | None = None,
+        fields: str | list[str] | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[OddsLine]]:
         """Get current odds snapshot.
 
@@ -206,15 +206,15 @@ class _OddsResource:
     def best(
         self,
         *,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        event: Optional[Union[str, list[str]]] = None,
-        live: Optional[bool] = None,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        add_sportsbook: Optional[Union[str, list[str]]] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        event: str | list[str] | None = None,
+        live: bool | None = None,
+        sportsbook: str | list[str] | None = None,
+        add_sportsbook: str | list[str] | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[OddsLine]]:
         """Get best odds per selection across all sportsbooks."""
         data = self._client._get("/odds/best", {
@@ -234,7 +234,7 @@ class _OddsResource:
         self,
         event_id: str,
         *,
-        market: Optional[str] = None,
+        market: str | None = None,
     ) -> APIResponse[list[OddsLine]]:
         """Get side-by-side odds comparison for an event."""
         data = self._client._get("/odds/comparison", {
@@ -258,21 +258,21 @@ class _EVResource:
     def get(
         self,
         *,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        add_sportsbook: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        min_ev: Optional[float] = None,
-        max_ev: Optional[float] = None,
-        min_market_width: Optional[float] = None,
-        max_market_width: Optional[float] = None,
-        max_odds_age: Optional[int] = None,
-        date_range: Optional[str] = None,
-        live: Optional[bool] = None,
-        sort: Optional[str] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        sportsbook: str | list[str] | None = None,
+        add_sportsbook: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        min_ev: float | None = None,
+        max_ev: float | None = None,
+        min_market_width: float | None = None,
+        max_market_width: float | None = None,
+        max_odds_age: int | None = None,
+        date_range: str | None = None,
+        live: bool | None = None,
+        sort: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[EVOpportunity]]:
         """Get +EV opportunities.
 
@@ -324,18 +324,18 @@ class _ArbitrageResource:
     def get(
         self,
         *,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        add_sportsbook: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        min_profit: Optional[float] = None,
-        max_odds_age: Optional[int] = None,
-        live: Optional[bool] = None,
-        sort: Optional[str] = None,
-        group: Optional[str] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        sportsbook: str | list[str] | None = None,
+        add_sportsbook: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        min_profit: float | None = None,
+        max_odds_age: int | None = None,
+        live: bool | None = None,
+        sort: str | None = None,
+        group: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[ArbitrageOpportunity]]:
         """Get arbitrage opportunities.
 
@@ -374,10 +374,10 @@ class _ArbitrageResource:
     def csv(
         self,
         *,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        min_profit: Optional[float] = None,
-        limit: Optional[int] = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        min_profit: float | None = None,
+        limit: int | None = None,
     ) -> str:
         """Get arbitrage opportunities as CSV text."""
         data = self._client._get("/opportunities/arbitrage", {
@@ -403,17 +403,17 @@ class _MiddlesResource:
     def get(
         self,
         *,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        min_size: Optional[float] = None,
-        max_odds_age: Optional[int] = None,
-        live: Optional[bool] = None,
-        state: Optional[str] = None,
-        sort: Optional[str] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        sportsbook: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        min_size: float | None = None,
+        max_odds_age: int | None = None,
+        live: bool | None = None,
+        state: str | None = None,
+        sort: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[MiddleOpportunity]]:
         """Get middle opportunities.
 
@@ -457,16 +457,16 @@ class _LowHoldResource:
     def get(
         self,
         *,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        max_hold: Optional[float] = None,
-        live: Optional[bool] = None,
-        state: Optional[str] = None,
-        sort: Optional[str] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        sportsbook: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        max_hold: float | None = None,
+        live: bool | None = None,
+        state: str | None = None,
+        sort: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[LowHoldOpportunity]]:
         """Get low-hold opportunities.
 
@@ -517,7 +517,7 @@ class _LeaguesResource:
     def __init__(self, client: SharpAPI):
         self._client = client
 
-    def list(self, *, sport: Optional[str] = None) -> APIResponse[list[League]]:
+    def list(self, *, sport: str | None = None) -> APIResponse[list[League]]:
         """List all leagues, optionally filtered by sport."""
         data = self._client._get("/leagues", {"sport": sport})
         return _parse_response(data, League)
@@ -552,11 +552,11 @@ class _EventsResource:
     def list(
         self,
         *,
-        sport: Optional[str] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        live: Optional[bool] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sport: str | None = None,
+        league: str | list[str] | None = None,
+        live: bool | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[Event]]:
         """List events."""
         data = self._client._get("/events", {
@@ -610,10 +610,10 @@ class _StreamResource:
     def odds(
         self,
         *,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        sport: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
+        sportsbook: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        sport: str | list[str] | None = None,
+        market: str | list[str] | None = None,
     ) -> EventStream:
         """Stream real-time odds updates.
 
@@ -633,12 +633,12 @@ class _StreamResource:
     def opportunities(
         self,
         *,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        sport: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        min_ev: Optional[float] = None,
-        min_profit: Optional[float] = None,
+        sportsbook: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        sport: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        min_ev: float | None = None,
+        min_profit: float | None = None,
     ) -> EventStream:
         """Stream real-time opportunity alerts (EV, arb, middles).
 
@@ -657,10 +657,10 @@ class _StreamResource:
     def all(
         self,
         *,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        sport: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
+        sportsbook: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        sport: str | list[str] | None = None,
+        market: str | list[str] | None = None,
     ) -> EventStream:
         """Stream all data (odds + opportunities).
 
@@ -678,8 +678,8 @@ class _StreamResource:
         self,
         event_id: str,
         *,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
+        sportsbook: str | list[str] | None = None,
+        market: str | list[str] | None = None,
     ) -> EventStream:
         """Stream updates for a single event."""
         return self._build_stream(f"/stream/events/{event_id}", {

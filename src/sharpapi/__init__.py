@@ -17,6 +17,7 @@ Example::
         print(f"+{opp.ev_percentage}% on {opp.selection} @ {opp.sportsbook}")
 """
 
+from ._utils import american_to_decimal, american_to_probability, decimal_to_american
 from .async_client import AsyncSharpAPI
 from .client import SharpAPI
 from .exceptions import (
@@ -28,12 +29,12 @@ from .exceptions import (
     ValidationError,
 )
 from .models import (
-    APIResponse,
     AccountInfo,
+    APIResponse,
     ArbitrageLeg,
     ArbitrageOpportunity,
-    EVOpportunity,
     Event,
+    EVOpportunity,
     GameState,
     League,
     LowHoldOpportunity,
@@ -49,7 +50,6 @@ from .models import (
     Sportsbook,
 )
 from .streaming import EventStream
-from ._utils import american_to_decimal, american_to_probability, decimal_to_american
 
 __version__ = "0.2.1"
 

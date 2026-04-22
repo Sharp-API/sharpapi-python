@@ -8,7 +8,6 @@ from httpx import Response
 
 from sharpapi import (
     ArbitrageOpportunity,
-    AsyncSharpAPI,
     AuthenticationError,
     EVOpportunity,
     LowHoldOpportunity,
@@ -21,26 +20,26 @@ from sharpapi import (
     TierRestrictedError,
     ValidationError,
 )
+
 from .conftest import (
-    ARBITRAGE_RESPONSE,
+    ACCOUNT_RESPONSE,
     API_KEY,
+    ARBITRAGE_RESPONSE,
     BASE_URL,
-    EV_RESPONSE,
     ERROR_400,
     ERROR_401,
     ERROR_403,
     ERROR_429,
+    EV_RESPONSE,
+    EVENTS_RESPONSE,
+    LEAGUES_RESPONSE,
     LOW_HOLD_RESPONSE,
     MIDDLES_RESPONSE,
     ODDS_RESPONSE,
     RATE_LIMIT_HEADERS,
     SPORTS_RESPONSE,
     SPORTSBOOKS_RESPONSE,
-    EVENTS_RESPONSE,
-    LEAGUES_RESPONSE,
-    ACCOUNT_RESPONSE,
 )
-
 
 # =============================================================================
 # Client Lifecycle
@@ -246,7 +245,10 @@ class TestArbitrageResource:
         with SharpAPI(API_KEY) as client:
             client.arbitrage.get(sportsbook=["draftkings", "fanduel"])
             url = str(route.calls[0].request.url)
-            assert "sportsbook=draftkings%2Cfanduel" in url or "sportsbook=draftkings,fanduel" in url
+            assert (
+                "sportsbook=draftkings%2Cfanduel" in url
+                or "sportsbook=draftkings,fanduel" in url
+            )
 
 
 class TestEVResource:
@@ -312,7 +314,12 @@ class TestReferenceResources:
     def test_sports_get(self):
         respx.get(f"{BASE_URL}/api/v1/sports/basketball").mock(
             return_value=Response(200, json={
-                "data": {"id": "basketball", "name": "Basketball", "slug": "basketball", "active": True}
+                "data": {
+                    "id": "basketball",
+                    "name": "Basketball",
+                    "slug": "basketball",
+                    "active": True,
+                }
             })
         )
         with SharpAPI(API_KEY) as client:
@@ -353,6 +360,9 @@ class TestReferenceResources:
         )
         with SharpAPI(API_KEY) as client:
             info = client.account.me()
+            assert info.key is not None
+            assert info.limits is not None
+            assert info.features is not None
             assert info.key["tier"] == "pro"
             assert info.limits.requests_per_minute == 300
             assert info.features.ev is True

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Optional, Union
+from typing import Any
 
 import httpx
 
@@ -20,18 +20,18 @@ from ._base import (
 )
 from ._utils import _clean_params
 from .models import (
-    APIResponse,
     AccountInfo,
+    APIResponse,
     ArbitrageOpportunity,
-    EVOpportunity,
     Event,
+    EVOpportunity,
     League,
     LowHoldOpportunity,
     MiddleOpportunity,
     OddsLine,
     RateLimitInfo,
-    Sportsbook,
     Sport,
+    Sportsbook,
 )
 
 
@@ -93,7 +93,7 @@ class AsyncSharpAPI:
         return self._last_rate_limit
 
     async def _request(self, method: str, path: str, params: dict | None = None, **kwargs) -> Any:
-        """Make an async API request and return parsed JSON. Retries 502/503/504 with jittered backoff."""
+        """Make an async request, return parsed JSON. Retries 502/503/504 with jittered backoff."""
         if params:
             params = _clean_params(params)
 
@@ -148,18 +148,18 @@ class _AsyncOddsResource:
     async def get(
         self,
         *,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        add_sportsbook: Optional[Union[str, list[str]]] = None,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        event: Optional[Union[str, list[str]]] = None,
-        live: Optional[bool] = None,
-        sort: Optional[str] = None,
-        group_by: Optional[str] = None,
-        fields: Optional[Union[str, list[str]]] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sportsbook: str | list[str] | None = None,
+        add_sportsbook: str | list[str] | None = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        event: str | list[str] | None = None,
+        live: bool | None = None,
+        sort: str | None = None,
+        group_by: str | None = None,
+        fields: str | list[str] | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[OddsLine]]:
         """Get current odds snapshot."""
         data = await self._client._get("/odds", {
@@ -181,15 +181,15 @@ class _AsyncOddsResource:
     async def best(
         self,
         *,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        event: Optional[Union[str, list[str]]] = None,
-        live: Optional[bool] = None,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        add_sportsbook: Optional[Union[str, list[str]]] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        event: str | list[str] | None = None,
+        live: bool | None = None,
+        sportsbook: str | list[str] | None = None,
+        add_sportsbook: str | list[str] | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[OddsLine]]:
         """Get best odds per selection across all sportsbooks."""
         data = await self._client._get("/odds/best", {
@@ -209,7 +209,7 @@ class _AsyncOddsResource:
         self,
         event_id: str,
         *,
-        market: Optional[str] = None,
+        market: str | None = None,
     ) -> APIResponse[list[OddsLine]]:
         """Get side-by-side odds comparison for an event."""
         data = await self._client._get("/odds/comparison", {
@@ -233,21 +233,21 @@ class _AsyncEVResource:
     async def get(
         self,
         *,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        add_sportsbook: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        min_ev: Optional[float] = None,
-        max_ev: Optional[float] = None,
-        min_market_width: Optional[float] = None,
-        max_market_width: Optional[float] = None,
-        max_odds_age: Optional[int] = None,
-        date_range: Optional[str] = None,
-        live: Optional[bool] = None,
-        sort: Optional[str] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        sportsbook: str | list[str] | None = None,
+        add_sportsbook: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        min_ev: float | None = None,
+        max_ev: float | None = None,
+        min_market_width: float | None = None,
+        max_market_width: float | None = None,
+        max_odds_age: int | None = None,
+        date_range: str | None = None,
+        live: bool | None = None,
+        sort: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[EVOpportunity]]:
         """Get +EV opportunities. Requires Pro tier or higher."""
         data = await self._client._get("/opportunities/ev", {
@@ -279,18 +279,18 @@ class _AsyncArbitrageResource:
     async def get(
         self,
         *,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        add_sportsbook: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        min_profit: Optional[float] = None,
-        max_odds_age: Optional[int] = None,
-        live: Optional[bool] = None,
-        sort: Optional[str] = None,
-        group: Optional[str] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        sportsbook: str | list[str] | None = None,
+        add_sportsbook: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        min_profit: float | None = None,
+        max_odds_age: int | None = None,
+        live: bool | None = None,
+        sort: str | None = None,
+        group: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[ArbitrageOpportunity]]:
         """Get arbitrage opportunities. Requires Hobby tier or higher."""
         data = await self._client._get("/opportunities/arbitrage", {
@@ -319,17 +319,17 @@ class _AsyncMiddlesResource:
     async def get(
         self,
         *,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        min_size: Optional[float] = None,
-        max_odds_age: Optional[int] = None,
-        live: Optional[bool] = None,
-        state: Optional[str] = None,
-        sort: Optional[str] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        sportsbook: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        min_size: float | None = None,
+        max_odds_age: int | None = None,
+        live: bool | None = None,
+        state: str | None = None,
+        sort: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[MiddleOpportunity]]:
         """Get middle opportunities. Requires Pro tier or higher."""
         data = await self._client._get("/opportunities/middles", {
@@ -357,16 +357,16 @@ class _AsyncLowHoldResource:
     async def get(
         self,
         *,
-        sport: Optional[Union[str, list[str]]] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        sportsbook: Optional[Union[str, list[str]]] = None,
-        market: Optional[Union[str, list[str]]] = None,
-        max_hold: Optional[float] = None,
-        live: Optional[bool] = None,
-        state: Optional[str] = None,
-        sort: Optional[str] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        sportsbook: str | list[str] | None = None,
+        market: str | list[str] | None = None,
+        max_hold: float | None = None,
+        live: bool | None = None,
+        state: str | None = None,
+        sort: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[LowHoldOpportunity]]:
         """Get low-hold opportunities."""
         data = await self._client._get("/opportunities/low_hold", {
@@ -404,7 +404,7 @@ class _AsyncLeaguesResource:
     def __init__(self, client: AsyncSharpAPI):
         self._client = client
 
-    async def list(self, *, sport: Optional[str] = None) -> APIResponse[list[League]]:
+    async def list(self, *, sport: str | None = None) -> APIResponse[list[League]]:
         """List all leagues, optionally filtered by sport."""
         data = await self._client._get("/leagues", {"sport": sport})
         return parse_response(data, League)
@@ -439,11 +439,11 @@ class _AsyncEventsResource:
     async def list(
         self,
         *,
-        sport: Optional[str] = None,
-        league: Optional[Union[str, list[str]]] = None,
-        live: Optional[bool] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        sport: str | None = None,
+        league: str | list[str] | None = None,
+        live: bool | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> APIResponse[list[Event]]:
         """List events."""
         data = await self._client._get("/events", {

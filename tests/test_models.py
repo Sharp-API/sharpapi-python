@@ -10,6 +10,7 @@ from sharpapi.models import (
     OddsLine,
     Sport,
 )
+
 from .conftest import (
     ARBITRAGE_RESPONSE,
     EV_RESPONSE,
@@ -64,6 +65,7 @@ class TestArbitrageModel:
     def test_meta(self):
         result = parse_response(ARBITRAGE_RESPONSE, ArbitrageOpportunity)
         assert result.meta is not None
+        assert result.meta.pagination is not None
         assert result.meta.count == 1
         assert result.meta.pagination.limit == 50
         assert result.meta.pagination.has_more is False

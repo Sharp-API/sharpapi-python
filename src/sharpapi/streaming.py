@@ -5,7 +5,8 @@ from __future__ import annotations
 import json
 import logging
 import time
-from typing import Any, Callable, Iterator
+from collections.abc import Callable, Iterator
+from typing import Any
 
 import httpx
 
@@ -132,8 +133,9 @@ class EventStream:
                     raise AuthenticationError(
                         "Invalid API key", code="invalid_api_key", status=401
                     ) from e
+                status = e.response.status_code
                 raise StreamError(
-                    f"HTTP {e.response.status_code}", code="http_error", status=e.response.status_code
+                    f"HTTP {status}", code="http_error", status=status
                 ) from e
 
     def _stream_loop(self) -> None:

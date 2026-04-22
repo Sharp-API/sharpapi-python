@@ -7,7 +7,7 @@ from sharpapi.models import ArbitrageOpportunity, EVOpportunity
 
 pd = pytest.importorskip("pandas")
 
-from .conftest import ARBITRAGE_RESPONSE, EV_RESPONSE
+from .conftest import ARBITRAGE_RESPONSE, EV_RESPONSE  # noqa: E402  (must follow importorskip)
 
 
 class TestToDataFrame:

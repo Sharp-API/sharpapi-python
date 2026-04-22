@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Generic, List, Optional, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pydantic import AliasChoices, BaseModel, Field
 
@@ -26,33 +26,33 @@ class Pagination(BaseModel):
     limit: int
     offset: int
     has_more: bool
-    next_offset: Optional[int] = None
-    total: Optional[int] = None
+    next_offset: int | None = None
+    total: int | None = None
 
 
 class ResponseMeta(BaseModel):
     """Metadata returned with API responses."""
 
-    count: Optional[int] = None
-    total: Optional[int] = None
-    pagination: Optional[Pagination] = None
-    updated: Optional[str] = None
-    source: Optional[str] = None
-    last_update: Optional[str] = None
-    data_age_seconds: Optional[float] = None
-    filters: Optional[dict[str, Any]] = None
-    summary: Optional[dict[str, Any]] = None
-    books_analyzed: Optional[int] = None
+    count: int | None = None
+    total: int | None = None
+    pagination: Pagination | None = None
+    updated: str | None = None
+    source: str | None = None
+    last_update: str | None = None
+    data_age_seconds: float | None = None
+    filters: dict[str, Any] | None = None
+    summary: dict[str, Any] | None = None
+    books_analyzed: int | None = None
 
 
 class APIResponse(BaseModel, Generic[T]):
     """Standard API response wrapper."""
 
-    success: Optional[bool] = None
+    success: bool | None = None
     data: T
-    meta: Optional[ResponseMeta] = None
-    timestamp: Optional[str] = None
-    tier: Optional[str] = None
+    meta: ResponseMeta | None = None
+    timestamp: str | None = None
+    tier: str | None = None
 
     def to_dataframe(self, flatten: bool = True):
         """Convert response data to a pandas DataFrame.
@@ -84,7 +84,7 @@ class APIResponse(BaseModel, Generic[T]):
 
         rows = []
         for item in data:
-            if hasattr(item, "model_dump"):
+            if isinstance(item, BaseModel):
                 row = item.model_dump()
             else:
                 row = dict(item) if isinstance(item, dict) else {"value": item}
@@ -111,10 +111,10 @@ def _flatten_dict(d: dict, parent_key: str = "", sep: str = "_") -> dict:
 class GameState(BaseModel):
     """Live game state."""
 
-    period: Optional[str] = None
-    clock: Optional[str] = None
-    score_home: Optional[int] = None
-    score_away: Optional[int] = None
+    period: str | None = None
+    clock: str | None = None
+    score_home: int | None = None
+    score_away: int | None = None
 
 
 # =============================================================================
@@ -127,7 +127,7 @@ class OddsLine(BaseModel):
 
     id: str
     sportsbook: str
-    sportsbook_name: Optional[str] = None
+    sportsbook_name: str | None = None
     event_id: str
     sport: str
     league: str
@@ -135,21 +135,21 @@ class OddsLine(BaseModel):
     away_team: str
     market_type: str
     selection: str
-    selection_type: Optional[str] = None
+    selection_type: str | None = None
     odds_american: int | float
     odds_decimal: float
     probability: float
-    line: Optional[float] = None
-    event_start_time: Optional[str] = None
-    timestamp: Optional[str] = None
+    line: float | None = None
+    event_start_time: str | None = None
+    timestamp: str | None = None
     is_live: bool = False
-    deep_link: Optional[str] = None
-    player_name: Optional[str] = None
-    stat_category: Optional[str] = None
-    home_score: Optional[int] = None
-    away_score: Optional[int] = None
-    game_period: Optional[str] = None
-    game_clock: Optional[str] = None
+    deep_link: str | None = None
+    player_name: str | None = None
+    stat_category: str | None = None
+    home_score: int | None = None
+    away_score: int | None = None
+    game_period: str | None = None
+    game_clock: str | None = None
 
 
 # =============================================================================
@@ -161,50 +161,50 @@ class EVOpportunity(BaseModel):
     """A positive expected value (+EV) opportunity."""
 
     id: str
-    event_id: Optional[str] = Field(None, alias="game_id")
-    event_name: Optional[str] = Field(None, alias="game")
+    event_id: str | None = Field(None, alias="game_id")
+    event_name: str | None = Field(None, alias="game")
     sport: str
     league: str
-    market_type: Optional[str] = Field(None, alias="market")
+    market_type: str | None = Field(None, alias="market")
     selection: str
     sportsbook: str
     odds_american: int | float
     odds_decimal: float
-    no_vig_odds: Optional[float] = None
-    fair_probability: Optional[float] = Field(
+    no_vig_odds: float | None = None
+    fair_probability: float | None = Field(
         None, validation_alias=AliasChoices("fair_probability", "true_probability")
     )
     ev_percentage: float = Field(
         validation_alias=AliasChoices("ev_percentage", "ev_percent")
     )
-    kelly_percent: Optional[float] = Field(
+    kelly_percent: float | None = Field(
         None, validation_alias=AliasChoices("kelly_percent", "kelly_fraction")
     )
-    confidence_score: Optional[float] = None
-    book_count: Optional[int] = None
-    market_width: Optional[float] = None
-    devig_method: Optional[str] = None
-    sharp_book: Optional[str] = Field(
+    confidence_score: float | None = None
+    book_count: int | None = None
+    market_width: float | None = None
+    devig_method: str | None = None
+    sharp_book: str | None = Field(
         None, validation_alias=AliasChoices("sharp_book", "devig_book")
     )
-    sharp_odds_american: Optional[int | float] = None
-    sharp_odds_decimal: Optional[float] = None
-    line: Optional[float] = None
-    home_team: Optional[str] = None
-    away_team: Optional[str] = None
-    start_time: Optional[str] = None
+    sharp_odds_american: int | float | None = None
+    sharp_odds_decimal: float | None = None
+    line: float | None = None
+    home_team: str | None = None
+    away_team: str | None = None
+    start_time: str | None = None
     is_live: bool = False
-    arb_available: Optional[bool] = None
-    arb_profit: Optional[float] = None
+    arb_available: bool | None = None
+    arb_profit: float | None = None
     is_player_prop: bool = False
-    player_name: Optional[str] = None
-    stat_category: Optional[str] = None
+    player_name: str | None = None
+    stat_category: str | None = None
     possibly_stale: bool = False
-    oldest_odds_age_seconds: Optional[float] = None
-    warnings: List[str] = Field(default_factory=list)
-    detected_at: Optional[str] = None
-    external_event_id: Optional[str] = None
-    selection_id: Optional[str] = None
+    oldest_odds_age_seconds: float | None = None
+    warnings: list[str] = Field(default_factory=list)
+    detected_at: str | None = None
+    external_event_id: str | None = None
+    selection_id: str | None = None
 
     model_config = {"populate_by_name": True}
 
@@ -221,41 +221,41 @@ class ArbitrageLeg(BaseModel):
     selection: str
     odds_american: int | float
     odds_decimal: float
-    implied_probability: Optional[float] = None
+    implied_probability: float | None = None
     stake_percent: float
-    timestamp: Optional[str] = None
-    external_event_id: Optional[str] = None
-    selection_id: Optional[str] = None
-    market_id: Optional[str] = None
+    timestamp: str | None = None
+    external_event_id: str | None = None
+    selection_id: str | None = None
+    market_id: str | None = None
 
 
 class ArbitrageOpportunity(BaseModel):
     """A guaranteed-profit arbitrage opportunity."""
 
     id: str
-    event_id: Optional[str] = None
+    event_id: str | None = None
     event_name: str
     sport: str
-    league: Optional[str] = None
+    league: str | None = None
     market_type: str
-    line: Optional[float] = None
+    line: float | None = None
     profit_percent: float
-    implied_total: Optional[float] = None
-    estimated_net_profit_percent: Optional[float] = None
-    start_time: Optional[str] = None
+    implied_total: float | None = None
+    estimated_net_profit_percent: float | None = None
+    start_time: str | None = None
     is_live: bool = False
     is_alternate_line: bool = False
     possibly_stale: bool = False
-    oldest_odds_age_seconds: Optional[float] = None
-    warnings: List[str] = Field(default_factory=list)
-    game_state: Optional[GameState] = None
-    ev_available: Optional[bool] = None
-    ev_percentage: Optional[float] = None
+    oldest_odds_age_seconds: float | None = None
+    warnings: list[str] = Field(default_factory=list)
+    game_state: GameState | None = None
+    ev_available: bool | None = None
+    ev_percentage: float | None = None
     is_player_prop: bool = False
-    player_name: Optional[str] = None
-    stat_category: Optional[str] = None
-    legs: List[ArbitrageLeg]
-    detected_at: Optional[str] = None
+    player_name: str | None = None
+    stat_category: str | None = None
+    legs: list[ArbitrageLeg]
+    detected_at: str | None = None
 
 
 # =============================================================================
@@ -270,51 +270,51 @@ class MiddleSide(BaseModel):
     selection: str
     line: float
     odds: OddsValue
-    stake_percent: Optional[float] = None
-    odds_age_seconds: Optional[float] = None
-    deep_link: Optional[str] = None
+    stake_percent: float | None = None
+    odds_age_seconds: float | None = None
+    deep_link: str | None = None
 
 
 class MiddleOpportunity(BaseModel):
     """A middle opportunity where both sides can win."""
 
     id: str
-    event_id: Optional[str] = None
+    event_id: str | None = None
     event_name: str
     sport: str
-    league: Optional[str] = None
+    league: str | None = None
     market_type: str
-    home_team: Optional[str] = None
-    away_team: Optional[str] = None
-    start_time: Optional[str] = None
-    side1: Optional[MiddleSide] = None
-    side2: Optional[MiddleSide] = None
-    middle_size: Optional[float] = None
-    middle_numbers: Optional[List[int]] = None
-    middle_probability: Optional[float] = None
-    expected_value: Optional[float] = None
-    roi_percentage: Optional[float] = None
-    worst_case_loss: Optional[float] = None
-    best_case_profit: Optional[float] = None
-    break_even_percent: Optional[float] = None
+    home_team: str | None = None
+    away_team: str | None = None
+    start_time: str | None = None
+    side1: MiddleSide | None = None
+    side2: MiddleSide | None = None
+    middle_size: float | None = None
+    middle_numbers: list[int] | None = None
+    middle_probability: float | None = None
+    expected_value: float | None = None
+    roi_percentage: float | None = None
+    worst_case_loss: float | None = None
+    best_case_profit: float | None = None
+    break_even_percent: float | None = None
     is_guaranteed_profit: bool = False
-    guaranteed_roi: Optional[float] = None
-    key_numbers: Optional[List[int]] = None
-    key_number_probability: Optional[float] = None
-    quality_score: Optional[float] = None
-    market_overround: Optional[float] = None
+    guaranteed_roi: float | None = None
+    key_numbers: list[int] | None = None
+    key_number_probability: float | None = None
+    quality_score: float | None = None
+    market_overround: float | None = None
     is_live: bool = False
-    game_state: Optional[GameState] = None
+    game_state: GameState | None = None
     is_player_prop: bool = False
-    player_name: Optional[str] = None
-    stat_category: Optional[str] = None
-    odds_age_seconds: Optional[float] = None
-    warnings: List[str] = Field(default_factory=list)
-    detected_at: Optional[str] = None
+    player_name: str | None = None
+    stat_category: str | None = None
+    odds_age_seconds: float | None = None
+    warnings: list[str] = Field(default_factory=list)
+    detected_at: str | None = None
     # Flat fields (alternative to side1/side2 nesting)
-    gap_size: Optional[float] = Field(None, alias="gapSize")
-    potential_profit: Optional[float] = Field(None, alias="potentialProfit")
-    legs: Optional[List[ArbitrageLeg]] = None
+    gap_size: float | None = Field(None, alias="gapSize")
+    potential_profit: float | None = Field(None, alias="potentialProfit")
+    legs: list[ArbitrageLeg] | None = None
 
     model_config = {"populate_by_name": True}
 
@@ -328,40 +328,40 @@ class LowHoldSide(BaseModel):
     """One side of a low-hold opportunity."""
 
     selection: str
-    books: Optional[List[str]] = None
-    line: Optional[float] = None
-    odds: Optional[OddsValue] = None
-    deep_links: Optional[dict[str, str]] = None
+    books: list[str] | None = None
+    line: float | None = None
+    odds: OddsValue | None = None
+    deep_links: dict[str, str] | None = None
 
 
 class LowHoldOpportunity(BaseModel):
     """A low-hold (low vig) market."""
 
     id: str
-    event_id: Optional[str] = None
+    event_id: str | None = None
     event_name: str
     sport: str
-    league: Optional[str] = None
+    league: str | None = None
     market_type: str
-    line: Optional[float] = None
-    home_team: Optional[str] = None
-    away_team: Optional[str] = None
-    start_time: Optional[str] = None
+    line: float | None = None
+    home_team: str | None = None
+    away_team: str | None = None
+    start_time: str | None = None
     hold_percentage: float
-    side1: Optional[LowHoldSide] = None
-    side2: Optional[LowHoldSide] = None
-    side3: Optional[LowHoldSide] = None
+    side1: LowHoldSide | None = None
+    side2: LowHoldSide | None = None
+    side3: LowHoldSide | None = None
     is_live: bool = False
-    game_state: Optional[GameState] = None
+    game_state: GameState | None = None
     is_alternate_line: bool = False
-    all_books: Optional[List[str]] = None
-    confidence: Optional[float] = None
-    odds_age_seconds: Optional[float] = None
+    all_books: list[str] | None = None
+    confidence: float | None = None
+    odds_age_seconds: float | None = None
     possibly_stale: bool = False
     is_player_prop: bool = False
-    player_name: Optional[str] = None
-    stat_category: Optional[str] = None
-    detected_at: Optional[str] = None
+    player_name: str | None = None
+    stat_category: str | None = None
+    detected_at: str | None = None
 
 
 # =============================================================================
@@ -374,15 +374,15 @@ class Sport(BaseModel):
     name: str
     slug: str
     active: bool
-    event_count: Optional[int] = None
+    event_count: int | None = None
 
 
 class League(BaseModel):
     id: str
     name: str
     slug: str
-    sport_id: Optional[str] = None
-    country: Optional[str] = None
+    sport_id: str | None = None
+    country: str | None = None
     active: bool
 
 
@@ -391,8 +391,8 @@ class Sportsbook(BaseModel):
     name: str
     slug: str
     active: bool
-    regions: Optional[List[str]] = None
-    features: Optional[List[str]] = None
+    regions: list[str] | None = None
+    features: list[str] | None = None
 
 
 class Event(BaseModel):
@@ -401,9 +401,9 @@ class Event(BaseModel):
     league: str
     home_team: str
     away_team: str
-    start_time: Optional[str] = None
+    start_time: str | None = None
     is_live: bool = False
-    status: Optional[str] = None
+    status: str | None = None
 
 
 # =============================================================================
@@ -412,10 +412,10 @@ class Event(BaseModel):
 
 
 class AccountLimits(BaseModel):
-    requests_per_minute: Optional[int] = None
-    max_streams: Optional[int] = None
-    odds_delay_seconds: Optional[int] = None
-    max_books: Optional[int] = None
+    requests_per_minute: int | None = None
+    max_streams: int | None = None
+    odds_delay_seconds: int | None = None
+    max_books: int | None = None
 
 
 class AccountFeatures(BaseModel):
@@ -426,16 +426,16 @@ class AccountFeatures(BaseModel):
 
 
 class AccountInfo(BaseModel):
-    key: Optional[dict[str, Any]] = None
-    limits: Optional[AccountLimits] = None
-    features: Optional[AccountFeatures] = None
-    add_ons: Optional[List[str]] = None
+    key: dict[str, Any] | None = None
+    limits: AccountLimits | None = None
+    features: AccountFeatures | None = None
+    add_ons: list[str] | None = None
 
 
 class RateLimitInfo(BaseModel):
     """Rate limit state from response headers."""
 
-    limit: Optional[int] = None
-    remaining: Optional[int] = None
-    reset: Optional[float] = None
-    tier: Optional[str] = None
+    limit: int | None = None
+    remaining: int | None = None
+    reset: float | None = None
+    tier: str | None = None

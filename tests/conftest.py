@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 API_KEY = "sk_test_abc123"
 BASE_URL = "https://api.sharpapi.io"
 
