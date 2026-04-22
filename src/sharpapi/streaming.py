@@ -44,6 +44,7 @@ class EventStream:
         headers: dict[str, str],
         timeout: float = 90.0,
         max_reconnects: int = 5,
+        default_retry_ms: int = 3000,
     ):
         self._url = url
         self._headers = headers
@@ -52,6 +53,11 @@ class EventStream:
         self._handlers: dict[str, list[EventHandler]] = {}
         self._running = False
         self._last_event_id: str | None = None
+        # SSE protocol: server sends `retry: <ms>` to advise reconnect delay.
+        # SharpAPI emits `retry: 3000`. We honour it for the first few attempts,
+        # then switch to exponential backoff capped at 30s if reconnects keep
+        # failing — see connect().
+        self._retry_ms = default_retry_ms
 
     def on(self, event_type: str, handler: EventHandler | None = None):
         """Register a handler for an event type. Can be used as a decorator.
@@ -103,16 +109,26 @@ class EventStream:
     def connect(self) -> None:
         """Connect and block, processing events until disconnect() or error.
 
-        Automatically reconnects with exponential backoff on connection loss.
+        Reconnect policy is hybrid: the first ``HONOR_HINT_FOR`` attempts use
+        the server's ``retry:`` hint (default 3 s, updated whenever the server
+        sends a new value mid-stream). After that we switch to exponential
+        backoff capped at 30 s so we don't hammer a persistently broken server.
         """
         self._running = True
         reconnect_attempts = 0
+        # Honour the server's retry hint for the first N attempts; after that
+        # the failure is probably structural (server down, auth changed, etc.)
+        # and the gentler exponential backoff kicks in.
+        HONOR_HINT_FOR = 3
 
         while self._running and reconnect_attempts <= self._max_reconnects:
             try:
                 self._stream_loop()
                 if not self._running:
                     break
+                # Clean server close — reset backoff so a graceful reconnect
+                # doesn't carry forward old failure counts.
+                reconnect_attempts = 0
             except (httpx.ConnectError, httpx.ReadTimeout, httpx.RemoteProtocolError) as e:
                 reconnect_attempts += 1
                 if reconnect_attempts > self._max_reconnects:
@@ -120,9 +136,17 @@ class EventStream:
                         f"Max reconnection attempts ({self._max_reconnects}) reached",
                         code="max_reconnects",
                     ) from e  # noqa: B904
-                delay = min(2**reconnect_attempts, 30)
+
+                hint_seconds = self._retry_ms / 1000.0
+                if reconnect_attempts <= HONOR_HINT_FOR:
+                    delay = hint_seconds
+                else:
+                    # Exponential ramp anchored on the server's hint, capped at 30 s.
+                    excess = reconnect_attempts - HONOR_HINT_FOR
+                    delay = min(hint_seconds * (2 ** excess), 30.0)
+
                 logger.warning(
-                    "Connection lost, reconnecting in %ds (attempt %d/%d)",
+                    "Connection lost, reconnecting in %.1fs (attempt %d/%d)",
                     delay,
                     reconnect_attempts,
                     self._max_reconnects,
@@ -149,6 +173,10 @@ class EventStream:
                 for event_type, data in _parse_sse(response.iter_lines()):
                     if not self._running:
                         break
+                    if event_type == "__retry__":
+                        # Server advised a new reconnect delay — store but don't dispatch.
+                        self._retry_ms = data
+                        continue
                     self._emit(event_type, data)
 
     def disconnect(self) -> None:
@@ -179,7 +207,11 @@ class EventStream:
 
 
 def _parse_sse(lines: Iterator[str]) -> Iterator[tuple[str, Any]]:
-    """Parse SSE text stream into (event_type, parsed_data) tuples."""
+    """Parse SSE text stream into (event_type, parsed_data) tuples.
+
+    Yields a synthetic ``("__retry__", int_ms)`` tuple when the server emits a
+    ``retry:`` field so the caller can update its reconnect delay.
+    """
     event_type = "message"
     data_lines: list[str] = []
 
@@ -190,6 +222,11 @@ def _parse_sse(lines: Iterator[str]) -> Iterator[tuple[str, Any]]:
             data_lines.append(line[5:].strip())
         elif line.startswith("id:"):
             pass  # Tracked by httpx/EventSource
+        elif line.startswith("retry:"):
+            try:
+                yield "__retry__", int(line[6:].strip())
+            except ValueError:
+                pass  # Malformed retry: line — ignore.
         elif line == "" and data_lines:
             # End of event
             raw = "\n".join(data_lines)
