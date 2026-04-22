@@ -3,6 +3,11 @@ name: Publish to PyPI
 on:
   release:
     types: [published]
+  # workflow_dispatch lets operators dry-run the test matrix + gate
+  # wiring without cutting a real release (the actual PyPI upload step
+  # is guarded against non-release triggers, see below). Useful for
+  # verifying the gate after edits to test.yml or publish.yml.
+  workflow_dispatch:
 
 jobs:
   # Re-run the full test matrix on the tagged commit before publish.
@@ -50,4 +55,7 @@ jobs:
         run: hatch build
 
       - name: Publish to PyPI
+        # Only publish on an actual release event. workflow_dispatch
+        # runs through test+build as a dry run but must not upload.
+        if: github.event_name == 'release'
         uses: pypa/gh-action-pypi-publish@release/v1
