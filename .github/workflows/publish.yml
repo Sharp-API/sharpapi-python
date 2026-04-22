@@ -66,4 +66,4 @@ jobs:
         # Only publish on an actual release event. workflow_dispatch
         # runs through test+build as a dry run but must not upload.
         if: github.event_name == 'release'
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # release/v1
