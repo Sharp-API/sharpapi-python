@@ -5,7 +5,33 @@ on:
     types: [published]
 
 jobs:
+  # Re-run the full test matrix on the tagged commit before publish.
+  # Mirrors test.yml so a tagged release gets the same coverage as
+  # a push/PR. Previously publish.yml ran zero tests — a broken SDK
+  # could reach PyPI, and PyPI versions are immutable (only super-
+  # ceded). needs: test below gates the publish job on every matrix
+  # entry passing.
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install -e ".[test,pandas]"
+
+      - name: Run tests
+        run: pytest -v
+
   publish:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       id-token: write
