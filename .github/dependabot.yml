@@ -1,0 +1,22 @@
+# Dependabot keeps SHA-pinned GitHub Actions fresh.
+#
+# We pin third-party actions by full commit SHA (e.g. orhun/git-cliff-action
+# @c93ef52f... # v4) so tag moves can't silently propagate into our runners.
+# But frozen SHAs also freeze security fixes. This config opens a weekly PR
+# to bump any action whose upstream tag has advanced since our last pin,
+# with the changelog inlined so review is short. All action updates are
+# grouped into a single PR per week to avoid a Monday flood.
+#
+# Scope: github-actions only. Adding gomod/pip/npm ecosystems is a separate
+# decision — those PRs are much higher volume.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore(deps)"
