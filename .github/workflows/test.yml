@@ -23,6 +23,18 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e ".[test,pandas]"
+          pip install ruff pyright
+
+      - name: Ruff check
+        # [tool.ruff] config is already in pyproject.toml — rules E, F,
+        # I, UP. This step enforces them; before today they were only
+        # suggestions.
+        run: ruff check
+
+      - name: Pyright
+        # Same story — [tool.pyright] was set to standard mode in
+        # pyproject.toml but never invoked in CI.
+        run: pyright
 
       - name: Run tests
         run: pytest -v

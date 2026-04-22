@@ -30,7 +30,15 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: pip install -e ".[test,pandas]"
+        run: |
+          pip install -e ".[test,pandas]"
+          pip install ruff pyright
+
+      - name: Ruff check
+        run: ruff check
+
+      - name: Pyright
+        run: pyright
 
       - name: Run tests
         run: pytest -v
