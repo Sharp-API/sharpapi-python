@@ -21,6 +21,8 @@ from ._utils import american_to_decimal, american_to_probability, decimal_to_ame
 from .async_client import AsyncSharpAPI
 from .client import SharpAPI
 from .exceptions import (
+    ERROR_CODE_DESCRIPTIONS,
+    ERROR_CODE_TO_EXCEPTION,
     AuthenticationError,
     RateLimitedError,
     SharpAPIError,
@@ -51,7 +53,7 @@ from .models import (
 )
 from .streaming import EventStream
 
-__version__ = "0.2.1"
+__version__ = "0.2.3"
 
 __all__ = [
     # Clients
@@ -86,6 +88,9 @@ __all__ = [
     "StreamError",
     "TierRestrictedError",
     "ValidationError",
+    # Error-code registry
+    "ERROR_CODE_DESCRIPTIONS",
+    "ERROR_CODE_TO_EXCEPTION",
     # Utilities
     "american_to_decimal",
     "american_to_probability",

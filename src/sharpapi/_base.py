@@ -7,17 +7,19 @@ import random
 import httpx
 
 from .exceptions import (
+    ERROR_CODE_TO_EXCEPTION,
     AuthenticationError,
     RateLimitedError,
     SharpAPIError,
     TierRestrictedError,
     ValidationError,
+    canonical_code,
 )
 from .models import APIResponse, RateLimitInfo, ResponseMeta
 
 DEFAULT_BASE_URL = "https://api.sharpapi.io"
 DEFAULT_TIMEOUT = 30.0
-USER_AGENT = "sharpapi-python/0.2.2"
+USER_AGENT = "sharpapi-python/0.2.3"
 
 RETRY_STATUSES = frozenset({502, 503, 504})
 RETRY_MAX_ATTEMPTS = 3
@@ -90,6 +92,30 @@ def handle_errors(response: httpx.Response) -> None:
         code = body.get("code", "unknown_error")
     status = response.status_code
 
+    # Resolve deprecated code aliases (bad_request, invalid_request → validation_error).
+    code = canonical_code(code)
+
+    # Prefer the canonical code→exception mapping for well-known codes; fall back
+    # to HTTP-status-based routing for responses that omit an error code.
+    exc_class = ERROR_CODE_TO_EXCEPTION.get(code or "")
+    if exc_class is TierRestrictedError:
+        raise TierRestrictedError(
+            error_msg,
+            code=code,
+            status=status,
+            required_tier=body.get("required_tier"),
+        )
+    if exc_class is RateLimitedError:
+        raise RateLimitedError(
+            error_msg,
+            code=code,
+            status=status,
+            retry_after=body.get("retry_after"),
+        )
+    if exc_class is not None and exc_class is not SharpAPIError:
+        raise exc_class(error_msg, code=code, status=status)
+
+    # No canonical code match — route by HTTP status.
     if status == 401:
         raise AuthenticationError(error_msg, code=code, status=status)
     elif status == 403:
