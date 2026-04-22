@@ -21,12 +21,15 @@ from ._base import (
 from ._utils import _clean_params
 from .models import (
     AccountInfo,
+    APIKey,
     APIResponse,
     ArbitrageOpportunity,
+    ClosingSnapshot,
     Event,
     EVOpportunity,
     League,
     LowHoldOpportunity,
+    Market,
     MiddleOpportunity,
     OddsLine,
     RateLimitInfo,
@@ -86,6 +89,7 @@ class AsyncSharpAPI:
         self.sportsbooks = _AsyncSportsbooksResource(self)
         self.events = _AsyncEventsResource(self)
         self.account = _AsyncAccountResource(self)
+        self.keys = _AsyncKeysResource(self)
 
     @property
     def rate_limit(self) -> RateLimitInfo:
@@ -222,6 +226,25 @@ class _AsyncOddsResource:
         """Batch odds lookup for multiple events."""
         data = await self._client._post("/odds/batch", {"event_ids": event_ids})
         return parse_response(data, OddsLine)
+
+    async def closing(
+        self,
+        event_id: str,
+        *,
+        sportsbook: str | None = None,
+    ) -> ClosingSnapshot:
+        """Get closing-line snapshot for an event.
+
+        Returns the captured closing odds grouped by sportsbook. If no
+        closing data has been captured for the event, the returned
+        ``ClosingSnapshot.books`` mapping will be empty.
+        """
+        data = await self._client._get("/odds/closing", {
+            "event_id": event_id,
+            "sportsbook": sportsbook or None,
+        })
+        raw = data.get("data", data)
+        return ClosingSnapshot.model_validate(raw)
 
 
 class _AsyncEVResource:
@@ -461,6 +484,11 @@ class _AsyncEventsResource:
         raw = data.get("data", data)
         return Event.model_validate(raw)
 
+    async def markets(self, event_id: str) -> APIResponse[list[Market]]:
+        """List the markets available on a specific event."""
+        data = await self._client._get(f"/events/{event_id}/markets")
+        return parse_response(data, Market)
+
 
 class _AsyncAccountResource:
     def __init__(self, client: AsyncSharpAPI):
@@ -476,3 +504,33 @@ class _AsyncAccountResource:
         """Get current usage stats."""
         data = await self._client._get("/account/usage")
         return data.get("data", data)
+
+
+class _AsyncKeysResource:
+    """Async access to API key CRUD on the current account."""
+
+    def __init__(self, client: AsyncSharpAPI):
+        self._client = client
+
+    async def list(self) -> APIResponse[list[APIKey]]:
+        """List all API keys on the account."""
+        data = await self._client._get("/account/keys")
+        return parse_response(data, APIKey)
+
+    async def create(self, name: str) -> APIKey:
+        """Create a new API key. Returned ``APIKey.key`` is shown only once."""
+        data = await self._client._post("/account/keys", {"name": name})
+        raw = data.get("data", data)
+        return APIKey.model_validate(raw)
+
+    async def revoke(self, key_id: str) -> None:
+        """Revoke (delete) an API key by ID."""
+        await self._client._request("DELETE", f"/account/keys/{key_id}")
+
+    async def rotate(self, key_id: str) -> APIKey:
+        """Rotate an API key — issues a new key and revokes the old one."""
+        data = await self._client._post(f"/account/keys/{key_id}/rotate")
+        raw = data.get("data", data)
+        if isinstance(raw, dict) and "new_key" in raw:
+            return APIKey.model_validate(raw["new_key"])
+        return APIKey.model_validate(raw)

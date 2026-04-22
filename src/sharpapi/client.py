@@ -21,12 +21,15 @@ from ._base import (
 from ._utils import _clean_params
 from .models import (
     AccountInfo,
+    APIKey,
     APIResponse,
     ArbitrageOpportunity,
+    ClosingSnapshot,
     Event,
     EVOpportunity,
     League,
     LowHoldOpportunity,
+    Market,
     MiddleOpportunity,
     OddsLine,
     RateLimitInfo,
@@ -95,6 +98,7 @@ class SharpAPI:
         self.sportsbooks = _SportsbooksResource(self)
         self.events = _EventsResource(self)
         self.account = _AccountResource(self)
+        self.keys = _KeysResource(self)
         self.stream = _StreamResource(self)
 
     @property
@@ -247,6 +251,29 @@ class _OddsResource:
         """Batch odds lookup for multiple events."""
         data = self._client._post("/odds/batch", {"event_ids": event_ids})
         return _parse_response(data, OddsLine)
+
+    def closing(
+        self,
+        event_id: str,
+        *,
+        sportsbook: str | None = None,
+    ) -> ClosingSnapshot:
+        """Get closing-line snapshot for an event.
+
+        Returns the captured closing odds grouped by sportsbook. If no
+        closing data has been captured for the event, the returned
+        ``ClosingSnapshot.books`` mapping will be empty.
+
+        Args:
+            event_id: Event ID to fetch closing odds for.
+            sportsbook: Optional sportsbook filter (single book ID).
+        """
+        data = self._client._get("/odds/closing", {
+            "event_id": event_id,
+            "sportsbook": sportsbook or None,
+        })
+        raw = data.get("data", data)
+        return ClosingSnapshot.model_validate(raw)
 
 
 class _EVResource:
@@ -574,6 +601,11 @@ class _EventsResource:
         raw = data.get("data", data)
         return Event.model_validate(raw)
 
+    def markets(self, event_id: str) -> APIResponse[list[Market]]:
+        """List the markets available on a specific event."""
+        data = self._client._get(f"/events/{event_id}/markets")
+        return _parse_response(data, Market)
+
 
 class _AccountResource:
     def __init__(self, client: SharpAPI):
@@ -589,6 +621,50 @@ class _AccountResource:
         """Get current usage stats."""
         data = self._client._get("/account/usage")
         return data.get("data", data)
+
+
+class _KeysResource:
+    """Manage API keys on the current account.
+
+    Wraps the ``/account/keys`` CRUD endpoints. Requires authentication
+    with a key whose user has permission to manage keys (typically a
+    dashboard-issued key).
+    """
+
+    def __init__(self, client: SharpAPI):
+        self._client = client
+
+    def list(self) -> APIResponse[list[APIKey]]:
+        """List all API keys on the account."""
+        data = self._client._get("/account/keys")
+        return _parse_response(data, APIKey)
+
+    def create(self, name: str) -> APIKey:
+        """Create a new API key.
+
+        Returns the new ``APIKey`` including the one-time ``key`` secret
+        in ``APIKey.key``. Store it securely — it will not be shown again.
+        """
+        data = self._client._post("/account/keys", {"name": name})
+        raw = data.get("data", data)
+        return APIKey.model_validate(raw)
+
+    def revoke(self, key_id: str) -> None:
+        """Revoke (delete) an API key by ID."""
+        self._client._request("DELETE", f"/account/keys/{key_id}")
+
+    def rotate(self, key_id: str) -> APIKey:
+        """Rotate an API key — issues a new key and revokes the old one.
+
+        Returns the newly created ``APIKey`` (including the one-time
+        ``key`` secret).
+        """
+        data = self._client._post(f"/account/keys/{key_id}/rotate")
+        raw = data.get("data", data)
+        # Rotate response shape is {"data": {"new_key": {...}, "old_key": {...}}}
+        if isinstance(raw, dict) and "new_key" in raw:
+            return APIKey.model_validate(raw["new_key"])
+        return APIKey.model_validate(raw)
 
 
 class _StreamResource:

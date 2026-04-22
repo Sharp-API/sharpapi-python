@@ -406,6 +406,67 @@ class Event(BaseModel):
     status: str | None = None
 
 
+class Market(BaseModel):
+    """A market available on an event."""
+
+    market_type: str
+    market_label: str | None = None
+    selection_count: int | None = None
+    book_count: int | None = None
+    books: list[str] | None = None
+
+
+# =============================================================================
+# Closing Snapshot
+# =============================================================================
+
+
+class ClosingOddsLine(BaseModel):
+    """A single closing-line odds entry within a closing snapshot."""
+
+    sportsbook: str
+    market_type: str
+    selection: str
+    selection_type: str | None = None
+    odds_american: int | float
+    odds_decimal: float
+    line: float | None = None
+    player_name: str | None = None
+    stat_category: str | None = None
+
+
+class ClosingSnapshot(BaseModel):
+    """Closing-line snapshot for an event, grouped by sportsbook."""
+
+    event_id: str
+    sport: str | None = None
+    league: str | None = None
+    home_team: str | None = None
+    away_team: str | None = None
+    event_start_time: str | None = None
+    captured_at: str | None = None
+    books: dict[str, list[ClosingOddsLine]] = Field(default_factory=dict)
+
+
+# =============================================================================
+# Account / Keys
+# =============================================================================
+
+
+class APIKey(BaseModel):
+    """An API key managed via the /account/keys endpoints."""
+
+    id: str
+    id_masked: str | None = None
+    # Present only on create/rotate responses (one-time secret).
+    key: str | None = None
+    name: str | None = None
+    tier: str | None = None
+    is_active: bool | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
 # =============================================================================
 # Account
 # =============================================================================

@@ -32,15 +32,19 @@ from .exceptions import (
 )
 from .models import (
     AccountInfo,
+    APIKey,
     APIResponse,
     ArbitrageLeg,
     ArbitrageOpportunity,
+    ClosingOddsLine,
+    ClosingSnapshot,
     Event,
     EVOpportunity,
     GameState,
     League,
     LowHoldOpportunity,
     LowHoldSide,
+    Market,
     MiddleOpportunity,
     MiddleSide,
     OddsLine,
@@ -53,23 +57,27 @@ from .models import (
 )
 from .streaming import EventStream
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 __all__ = [
     # Clients
     "SharpAPI",
     "AsyncSharpAPI",
     # Models
+    "APIKey",
     "APIResponse",
     "AccountInfo",
     "ArbitrageLeg",
     "ArbitrageOpportunity",
+    "ClosingOddsLine",
+    "ClosingSnapshot",
     "EVOpportunity",
     "Event",
     "GameState",
     "League",
     "LowHoldOpportunity",
     "LowHoldSide",
+    "Market",
     "MiddleOpportunity",
     "MiddleSide",
     "OddsLine",

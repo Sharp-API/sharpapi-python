@@ -19,7 +19,7 @@ from .models import APIResponse, RateLimitInfo, ResponseMeta
 
 DEFAULT_BASE_URL = "https://api.sharpapi.io"
 DEFAULT_TIMEOUT = 30.0
-USER_AGENT = "sharpapi-python/0.2.3"
+USER_AGENT = "sharpapi-python/0.2.4"
 
 RETRY_STATUSES = frozenset({502, 503, 504})
 RETRY_MAX_ATTEMPTS = 3
