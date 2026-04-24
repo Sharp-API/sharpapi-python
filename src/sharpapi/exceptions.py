@@ -82,6 +82,7 @@ INVALID_TOKEN = "invalid_token"
 METHOD_NOT_ALLOWED = "method_not_allowed"
 MISSING_API_KEY = "missing_api_key"
 NOT_FOUND = "not_found"
+OFFSET_TOO_LARGE = "offset_too_large"
 RATE_LIMITED = "rate_limited"
 SERVICE_UNAVAILABLE = "service_unavailable"
 TIER_RESTRICTED = "tier_restricted"
@@ -113,6 +114,7 @@ ERROR_CODE_DESCRIPTIONS: dict[str, str] = {
     METHOD_NOT_ALLOWED: "HTTP method not allowed on this endpoint.",
     MISSING_API_KEY: "No API key provided.",
     NOT_FOUND: "Resource not found.",
+    OFFSET_TOO_LARGE: "offset exceeds the per-endpoint maximum; use cursor-based pagination or advance `since`.",
     RATE_LIMITED: "Rate limit exceeded; see Retry-After header.",
     SERVICE_UNAVAILABLE: "Service is temporarily unavailable.",
     TIER_RESTRICTED: "Current subscription tier does not include this feature.",
@@ -148,6 +150,7 @@ ERROR_CODE_TO_EXCEPTION: dict[str, type[SharpAPIError]] = {
     TOO_MANY_STREAMS: RateLimitedError,
     # Validation
     VALIDATION_ERROR: ValidationError,
+    OFFSET_TOO_LARGE: ValidationError,
     # Streaming frames
     WS_ALREADY_AUTHENTICATED: StreamError,
     WS_INVALID_MESSAGE: StreamError,
