@@ -82,6 +82,7 @@ INVALID_TOKEN = "invalid_token"
 METHOD_NOT_ALLOWED = "method_not_allowed"
 MISSING_API_KEY = "missing_api_key"
 NOT_FOUND = "not_found"
+NOT_READY = "not_ready"
 OFFSET_TOO_LARGE = "offset_too_large"
 RATE_LIMITED = "rate_limited"
 SERVICE_UNAVAILABLE = "service_unavailable"
@@ -114,6 +115,7 @@ ERROR_CODE_DESCRIPTIONS: dict[str, str] = {
     METHOD_NOT_ALLOWED: "HTTP method not allowed on this endpoint.",
     MISSING_API_KEY: "No API key provided.",
     NOT_FOUND: "Resource not found.",
+    NOT_READY: "A required backing store is not yet ready to serve this request; retry shortly.",
     OFFSET_TOO_LARGE: (
         "offset exceeds the per-endpoint maximum; "
         "use cursor-based pagination or advance `since`."
@@ -166,6 +168,7 @@ ERROR_CODE_TO_EXCEPTION: dict[str, type[SharpAPIError]] = {
     INTERNAL_ERROR: SharpAPIError,
     METHOD_NOT_ALLOWED: SharpAPIError,
     NOT_FOUND: SharpAPIError,
+    NOT_READY: SharpAPIError,
     SERVICE_UNAVAILABLE: SharpAPIError,
     UNKNOWN_ENDPOINT: SharpAPIError,
     UPSTREAM_ERROR: SharpAPIError,
