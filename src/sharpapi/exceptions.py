@@ -114,7 +114,10 @@ ERROR_CODE_DESCRIPTIONS: dict[str, str] = {
     METHOD_NOT_ALLOWED: "HTTP method not allowed on this endpoint.",
     MISSING_API_KEY: "No API key provided.",
     NOT_FOUND: "Resource not found.",
-    OFFSET_TOO_LARGE: "offset exceeds the per-endpoint maximum; use cursor-based pagination or advance `since`.",
+    OFFSET_TOO_LARGE: (
+        "offset exceeds the per-endpoint maximum; "
+        "use cursor-based pagination or advance `since`."
+    ),
     RATE_LIMITED: "Rate limit exceeded; see Retry-After header.",
     SERVICE_UNAVAILABLE: "Service is temporarily unavailable.",
     TIER_RESTRICTED: "Current subscription tier does not include this feature.",
