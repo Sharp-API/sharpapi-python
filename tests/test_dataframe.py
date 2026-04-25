@@ -25,20 +25,13 @@ class TestToDataFrame:
         assert df.iloc[0]["ev_percentage"] == 4.2
         assert df.iloc[0]["sportsbook"] == "draftkings"
 
-    def test_flattens_nested_dicts(self):
+    def test_flatten_does_not_split_lists(self):
         result = parse_response(ARBITRAGE_RESPONSE, ArbitrageOpportunity)
         df = result.to_dataframe(flatten=True)
-        assert "game_state_period" in df.columns
-        assert "game_state_clock" in df.columns
-        assert "game_state_score_home" in df.columns
-        assert df.iloc[0]["game_state_period"] == "Q2"
-
-    def test_no_flatten_keeps_nested(self):
-        result = parse_response(ARBITRAGE_RESPONSE, ArbitrageOpportunity)
-        df = result.to_dataframe(flatten=False)
-        assert "game_state" in df.columns
-        gs = df.iloc[0]["game_state"]
-        assert gs["period"] == "Q2"
+        # Lists like `legs` stay as a single column rather than being
+        # exploded into per-index columns.
+        assert "legs" in df.columns
+        assert isinstance(df.iloc[0]["legs"], list)
 
     def test_legs_remain_as_list(self):
         result = parse_response(ARBITRAGE_RESPONSE, ArbitrageOpportunity)

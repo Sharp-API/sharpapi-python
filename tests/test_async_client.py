@@ -11,6 +11,7 @@ from sharpapi import (
     AsyncSharpAPI,
     AuthenticationError,
     EVOpportunity,
+    GameState,
     OddsLine,
     RateLimitedError,
     Sport,
@@ -24,6 +25,7 @@ from .conftest import (
     ERROR_401,
     ERROR_429,
     EV_RESPONSE,
+    GAMESTATE_RESPONSE,
     ODDS_RESPONSE,
     RATE_LIMIT_HEADERS,
     SPORTS_RESPONSE,
@@ -51,6 +53,7 @@ class TestAsyncClientInit:
         assert hasattr(client, "arbitrage")
         assert hasattr(client, "middles")
         assert hasattr(client, "low_hold")
+        assert hasattr(client, "gamestate")
         assert hasattr(client, "sports")
         assert hasattr(client, "leagues")
         assert hasattr(client, "sportsbooks")
@@ -175,6 +178,35 @@ class TestAsyncOpportunities:
             assert len(result.data) == 1
             assert isinstance(result.data[0], EVOpportunity)
             assert result.data[0].ev_percentage == 4.2
+
+
+class TestAsyncGameState:
+    @pytest.mark.asyncio
+    @respx.mock
+    async def test_get_all_sports(self):
+        respx.get(f"{BASE_URL}/api/v1/gamestate").mock(
+            return_value=Response(200, json=GAMESTATE_RESPONSE)
+        )
+        async with AsyncSharpAPI(API_KEY) as client:
+            result = await client.gamestate.get()
+            state = result["basketball"]["evt_lal_bos"]
+            assert isinstance(state, GameState)
+            assert state.home_score == 48
+            assert state.game_period == "Q2"
+
+    @pytest.mark.asyncio
+    @respx.mock
+    async def test_get_single_sport(self):
+        route = respx.get(f"{BASE_URL}/api/v1/gamestate/basketball").mock(
+            return_value=Response(200, json={
+                "data": {"basketball": GAMESTATE_RESPONSE["data"]["basketball"]},
+                "updated_at": "2026-04-25T20:30:00Z",
+            })
+        )
+        async with AsyncSharpAPI(API_KEY) as client:
+            result = await client.gamestate.get("basketball")
+            assert route.called
+            assert "football" not in result
 
 
 # =============================================================================

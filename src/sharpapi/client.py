@@ -29,6 +29,7 @@ from .models import (
     ClosingSnapshot,
     Event,
     EVOpportunity,
+    GameState,
     League,
     LowHoldOpportunity,
     Market,
@@ -111,6 +112,7 @@ class SharpAPI:
         self.arbitrage = _ArbitrageResource(self)
         self.middles = _MiddlesResource(self)
         self.low_hold = _LowHoldResource(self)
+        self.gamestate = _GameStateResource(self)
         self.sports = _SportsResource(self)
         self.leagues = _LeaguesResource(self)
         self.sportsbooks = _SportsbooksResource(self)
@@ -542,6 +544,44 @@ class _LowHoldResource:
         return _parse_response(data, LowHoldOpportunity)
 
 
+class _GameStateResource:
+    """Live game state — scores, period, clock — merged across sportsbooks.
+
+    Requires the Game State add-on ($79/mo) or Enterprise tier.
+    Pair with EV / arb / low-hold rows: those endpoints no longer carry
+    ``game_state`` themselves — look up the row's ``event_id`` here.
+    """
+
+    def __init__(self, client: SharpAPI):
+        self._client = client
+
+    def get(self, sport: str | None = None) -> dict[str, dict[str, GameState]]:
+        """Fetch the current game state.
+
+        Args:
+            sport: Limit to a single sport (e.g. ``"basketball"``,
+                ``"football"``). Omit to fetch every sport at once.
+
+        Returns:
+            Nested mapping ``{sport: {event_id: GameState}}``. Look up an
+            opportunity's state with
+            ``result.get(opp.sport, {}).get(opp.event_id)``.
+        """
+        path = f"/gamestate/{sport}" if sport else "/gamestate"
+        data = self._client._get(path)
+        raw = data.get("data", {}) or {}
+        result: dict[str, dict[str, GameState]] = {}
+        for sport_key, events in raw.items():
+            if not isinstance(events, dict):
+                continue
+            result[sport_key] = {
+                eid: GameState.model_validate(state)
+                for eid, state in events.items()
+                if isinstance(state, dict)
+            }
+        return result
+
+
 class _SportsResource:
     def __init__(self, client: SharpAPI):
         self._client = client
@@ -780,6 +820,15 @@ class _StreamResource:
             "sportsbook": sportsbook,
             "market": market,
         })
+
+    def gamestate(self) -> EventStream:
+        """Stream live game state updates (scores, period, clock).
+
+        Emits ``gamestate:snapshot`` (initial dump on connect) and
+        ``gamestate:update`` / ``gamestate:removed`` events. Requires the
+        Game State add-on or Enterprise tier.
+        """
+        return self._build_stream("/stream/gamestate")
 
 
 # =============================================================================
