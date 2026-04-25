@@ -28,12 +28,6 @@ ARBITRAGE_RESPONSE = {
             "possibly_stale": False,
             "oldest_odds_age_seconds": 12.5,
             "warnings": ["LIVE_GAME"],
-            "game_state": {
-                "period": "Q2",
-                "clock": "5:23",
-                "score_home": 48,
-                "score_away": 52,
-            },
             "ev_available": True,
             "ev_percentage": 3.2,
             "is_player_prop": False,

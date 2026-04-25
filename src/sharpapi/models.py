@@ -60,9 +60,9 @@ class APIResponse(BaseModel, Generic[T]):
         Requires ``pip install sharpapi[pandas]``.
 
         Args:
-            flatten: If True (default), flatten nested objects like
-                ``game_state.period`` into ``game_state_period`` columns.
-                Nested lists (like ``legs``) remain as-is.
+            flatten: If True (default), flatten nested objects into
+                underscore-joined columns. Nested lists (like ``legs``)
+                remain as-is.
 
         Returns:
             pandas.DataFrame with one row per item in ``data``.
@@ -109,7 +109,12 @@ def _flatten_dict(d: dict, parent_key: str = "", sep: str = "_") -> dict:
 
 
 class GameState(BaseModel):
-    """Live game state."""
+    """Live game state — scores, period, clock.
+
+    Returned by ``/api/v1/gamestate`` and the ``gamestate`` stream channel.
+    Not present on EV / arb / low-hold opportunity rows; correlate by
+    ``event_id``.
+    """
 
     period: str | None = None
     clock: str | None = None
@@ -146,10 +151,6 @@ class OddsLine(BaseModel):
     deep_link: str | None = None
     player_name: str | None = None
     stat_category: str | None = None
-    home_score: int | None = None
-    away_score: int | None = None
-    game_period: str | None = None
-    game_clock: str | None = None
 
 
 # =============================================================================
@@ -248,7 +249,6 @@ class ArbitrageOpportunity(BaseModel):
     possibly_stale: bool = False
     oldest_odds_age_seconds: float | None = None
     warnings: list[str] = Field(default_factory=list)
-    game_state: GameState | None = None
     ev_available: bool | None = None
     ev_percentage: float | None = None
     is_player_prop: bool = False
@@ -304,7 +304,6 @@ class MiddleOpportunity(BaseModel):
     quality_score: float | None = None
     market_overround: float | None = None
     is_live: bool = False
-    game_state: GameState | None = None
     is_player_prop: bool = False
     player_name: str | None = None
     stat_category: str | None = None
@@ -352,7 +351,6 @@ class LowHoldOpportunity(BaseModel):
     side2: LowHoldSide | None = None
     side3: LowHoldSide | None = None
     is_live: bool = False
-    game_state: GameState | None = None
     is_alternate_line: bool = False
     all_books: list[str] | None = None
     confidence: float | None = None
