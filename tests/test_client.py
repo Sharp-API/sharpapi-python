@@ -10,6 +10,7 @@ from sharpapi import (
     ArbitrageOpportunity,
     AuthenticationError,
     EVOpportunity,
+    GameState,
     LowHoldOpportunity,
     MiddleOpportunity,
     OddsLine,
@@ -32,6 +33,8 @@ from .conftest import (
     ERROR_429,
     EV_RESPONSE,
     EVENTS_RESPONSE,
+    GAMESTATE_BASKETBALL_RESPONSE,
+    GAMESTATE_RESPONSE,
     LEAGUES_RESPONSE,
     LOW_HOLD_RESPONSE,
     MIDDLES_RESPONSE,
@@ -72,6 +75,7 @@ class TestClientInit:
         assert hasattr(client, "arbitrage")
         assert hasattr(client, "middles")
         assert hasattr(client, "low_hold")
+        assert hasattr(client, "gamestate")
         assert hasattr(client, "sports")
         assert hasattr(client, "leagues")
         assert hasattr(client, "sportsbooks")
@@ -292,6 +296,74 @@ class TestLowHoldResource:
             lh = result.data[0]
             assert isinstance(lh, LowHoldOpportunity)
             assert lh.hold_percentage == 1.8
+
+
+class TestGameStateResource:
+    @respx.mock
+    def test_get_all_sports(self):
+        respx.get(f"{BASE_URL}/api/v1/gamestate").mock(
+            return_value=Response(200, json=GAMESTATE_RESPONSE)
+        )
+        with SharpAPI(API_KEY) as client:
+            result = client.gamestate.get()
+            assert set(result.keys()) == {"basketball", "football"}
+            state = result["basketball"]["evt_lal_bos"]
+            assert isinstance(state, GameState)
+            assert state.home_score == 48
+            assert state.away_score == 52
+            assert state.game_period == "Q2"
+            assert state.game_clock == "5:23"
+            assert state.primary_book == "draftkings"
+            assert state.book_count == 4
+            assert state.stale is False
+            # aggregator_stale defaults to False when omitted
+            assert state.aggregator_stale is False
+
+    @respx.mock
+    def test_get_single_sport(self):
+        route = respx.get(f"{BASE_URL}/api/v1/gamestate/basketball").mock(
+            return_value=Response(200, json=GAMESTATE_BASKETBALL_RESPONSE)
+        )
+        with SharpAPI(API_KEY) as client:
+            result = client.gamestate.get("basketball")
+            assert route.called
+            assert "football" not in result
+            assert "evt_lal_bos" in result["basketball"]
+
+    @respx.mock
+    def test_aggregator_stale_passthrough(self):
+        respx.get(f"{BASE_URL}/api/v1/gamestate").mock(
+            return_value=Response(200, json=GAMESTATE_RESPONSE)
+        )
+        with SharpAPI(API_KEY) as client:
+            result = client.gamestate.get()
+            stale_state = result["basketball"]["evt_gsw_phx"]
+            assert stale_state.aggregator_stale is True
+
+    @respx.mock
+    def test_unknown_extra_fields_pass_through(self):
+        # Forward-compat: aggregator may add new fields the SDK doesn't know.
+        respx.get(f"{BASE_URL}/api/v1/gamestate/basketball").mock(
+            return_value=Response(200, json={
+                "data": {
+                    "basketball": {
+                        "evt_x": {
+                            "home_score": 0,
+                            "away_score": 0,
+                            "future_field": "experimental",
+                        },
+                    },
+                },
+                "updated_at": "2026-04-25T20:30:00Z",
+            })
+        )
+        with SharpAPI(API_KEY) as client:
+            result = client.gamestate.get("basketball")
+            state = result["basketball"]["evt_x"]
+            # Pydantic model_dump should include the unknown field thanks to
+            # extra="allow".
+            dumped = state.model_dump()
+            assert dumped["future_field"] == "experimental"
 
 
 # =============================================================================

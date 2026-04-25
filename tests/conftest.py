@@ -243,6 +243,54 @@ ACCOUNT_RESPONSE = {
     },
 }
 
+GAMESTATE_RESPONSE = {
+    "data": {
+        "basketball": {
+            "evt_lal_bos": {
+                "home_score": 48,
+                "away_score": 52,
+                "game_period": "Q2",
+                "game_clock": "5:23",
+                "home_team": "Boston Celtics",
+                "away_team": "Los Angeles Lakers",
+                "sport": "basketball",
+                "primary_book": "draftkings",
+                "book_count": 4,
+                "stale": False,
+            },
+            "evt_gsw_phx": {
+                "home_score": 30,
+                "away_score": 28,
+                "game_period": "Q1",
+                "game_clock": "1:42",
+                "sport": "basketball",
+                "primary_book": "fanduel",
+                "book_count": 3,
+                "aggregator_stale": True,
+            },
+        },
+        "football": {
+            "evt_kc_buf": {
+                "home_score": 14,
+                "away_score": 7,
+                "game_period": "Q2",
+                "game_clock": "8:15",
+                "sport": "football",
+                "primary_book": "draftkings",
+                "book_count": 5,
+            },
+        },
+    },
+    "updated_at": "2026-04-25T20:30:00Z",
+}
+
+GAMESTATE_BASKETBALL_RESPONSE = {
+    "data": {
+        "basketball": GAMESTATE_RESPONSE["data"]["basketball"],
+    },
+    "updated_at": "2026-04-25T20:30:00Z",
+}
+
 ERROR_401 = {
     "error": {"code": "invalid_api_key", "message": "Invalid API key"},
 }

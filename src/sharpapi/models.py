@@ -109,17 +109,29 @@ def _flatten_dict(d: dict, parent_key: str = "", sep: str = "_") -> dict:
 
 
 class GameState(BaseModel):
-    """Live game state — scores, period, clock.
+    """Live game state for a single event, merged across sportsbooks.
 
     Returned by ``/api/v1/gamestate`` and the ``gamestate`` stream channel.
-    Not present on EV / arb / low-hold opportunity rows; correlate by
-    ``event_id``.
+    Scores are consensus-merged with period-guarded outlier rejection;
+    period/clock are picked from the most-advanced book. Not present on
+    EV / arb / low-hold opportunity rows — correlate by ``event_id``.
+
+    ``extra="allow"`` lets adapter-specific fields pass through unchanged.
     """
 
-    period: str | None = None
-    clock: str | None = None
-    score_home: int | None = None
-    score_away: int | None = None
+    home_score: int | None = None
+    away_score: int | None = None
+    game_period: str | None = None
+    game_clock: str | None = None
+    home_team: str | None = None
+    away_team: str | None = None
+    sport: str | None = None
+    primary_book: str | None = None
+    book_count: int | None = None
+    stale: bool = False
+    aggregator_stale: bool = False
+
+    model_config = {"extra": "allow"}
 
 
 # =============================================================================

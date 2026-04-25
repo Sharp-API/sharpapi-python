@@ -29,6 +29,7 @@ from .models import (
     ClosingSnapshot,
     Event,
     EVOpportunity,
+    GameState,
     League,
     LowHoldOpportunity,
     Market,
@@ -103,6 +104,7 @@ class AsyncSharpAPI:
         self.arbitrage = _AsyncArbitrageResource(self)
         self.middles = _AsyncMiddlesResource(self)
         self.low_hold = _AsyncLowHoldResource(self)
+        self.gamestate = _AsyncGameStateResource(self)
         self.sports = _AsyncSportsResource(self)
         self.leagues = _AsyncLeaguesResource(self)
         self.sportsbooks = _AsyncSportsbooksResource(self)
@@ -424,6 +426,41 @@ class _AsyncLowHoldResource:
             "offset": offset,
         })
         return parse_response(data, LowHoldOpportunity)
+
+
+class _AsyncGameStateResource:
+    """Async access to live game state — scores, period, clock —
+    merged across sportsbooks.
+
+    Requires the Game State add-on ($79/mo) or Enterprise tier.
+    """
+
+    def __init__(self, client: AsyncSharpAPI):
+        self._client = client
+
+    async def get(self, sport: str | None = None) -> dict[str, dict[str, GameState]]:
+        """Fetch the current game state.
+
+        Args:
+            sport: Limit to a single sport (e.g. ``"basketball"``).
+                Omit to fetch every sport at once.
+
+        Returns:
+            Nested mapping ``{sport: {event_id: GameState}}``.
+        """
+        path = f"/gamestate/{sport}" if sport else "/gamestate"
+        data = await self._client._get(path)
+        raw = data.get("data", {}) or {}
+        result: dict[str, dict[str, GameState]] = {}
+        for sport_key, events in raw.items():
+            if not isinstance(events, dict):
+                continue
+            result[sport_key] = {
+                eid: GameState.model_validate(state)
+                for eid, state in events.items()
+                if isinstance(state, dict)
+            }
+        return result
 
 
 class _AsyncSportsResource:
