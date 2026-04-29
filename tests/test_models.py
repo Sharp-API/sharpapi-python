@@ -4,7 +4,6 @@ from sharpapi._base import parse_response
 from sharpapi.models import (
     ArbitrageOpportunity,
     EVOpportunity,
-    GameState,
     LowHoldOpportunity,
     MiddleOpportunity,
     OddsLine,
@@ -46,15 +45,6 @@ class TestArbitrageModel:
         assert leg1.odds_decimal == 2.45
         assert leg1.stake_percent == 41.5
         assert leg1.external_event_id == "dk_12345"
-
-    def test_game_state(self):
-        result = parse_response(ARBITRAGE_RESPONSE, ArbitrageOpportunity)
-        gs = result.data[0].game_state
-        assert isinstance(gs, GameState)
-        assert gs.period == "Q2"
-        assert gs.clock == "5:23"
-        assert gs.score_home == 48
-        assert gs.score_away == 52
 
     def test_ev_cross_reference(self):
         result = parse_response(ARBITRAGE_RESPONSE, ArbitrageOpportunity)
@@ -187,7 +177,6 @@ class TestEmptyResponse:
         }
         result = parse_response(minimal, ArbitrageOpportunity)
         arb = result.data[0]
-        assert arb.game_state is None
         assert arb.warnings == []
         assert arb.possibly_stale is False
         assert arb.is_player_prop is False
