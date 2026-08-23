@@ -48,6 +48,7 @@ from .models import (
     Market,
     MiddleOpportunity,
     MiddleSide,
+    OddsBatchResponse,
     OddsLine,
     OddsValue,
     Pagination,
@@ -61,7 +62,7 @@ from .models import (
 )
 from .streaming import EventStream
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 __all__ = [
     # Clients
@@ -85,6 +86,7 @@ __all__ = [
     "Market",
     "MiddleOpportunity",
     "MiddleSide",
+    "OddsBatchResponse",
     "OddsLine",
     "OddsValue",
     "Pagination",

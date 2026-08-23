@@ -16,6 +16,7 @@ from ._base import (
     handle_errors,
     make_headers,
     normalize_base_url,
+    parse_object_response,
     parse_rate_limit,
     parse_response,
     retry_delay,
@@ -35,6 +36,7 @@ from .models import (
     LowHoldOpportunity,
     Market,
     MiddleOpportunity,
+    OddsBatchResponse,
     OddsLine,
     RateLimitInfo,
     Sport,
@@ -118,7 +120,15 @@ class AsyncSharpAPI:
         """Rate limit info from the last request."""
         return self._last_rate_limit
 
-    async def _request(self, method: str, path: str, params: dict | None = None, **kwargs) -> Any:
+    async def _request(
+        self,
+        method: str,
+        path: str,
+        params: dict | None = None,
+        *,
+        response_format: str = "json",
+        **kwargs,
+    ) -> Any:
         """Make an async request, return parsed JSON. Retries 502/503/504 with jittered backoff."""
         if params:
             params = _clean_params(params)
@@ -141,10 +151,15 @@ class AsyncSharpAPI:
         assert response is not None
         self._last_rate_limit = parse_rate_limit(response)
         handle_errors(response)
+        if response_format == "text":
+            return response.text
         return response.json()
 
     async def _get(self, path: str, params: dict | None = None) -> Any:
         return await self._request("GET", path, params)
+
+    async def _get_text(self, path: str, params: dict | None = None) -> str:
+        return await self._request("GET", path, params, response_format="text")
 
     async def _post(self, path: str, json_body: Any = None, params: dict | None = None) -> Any:
         return await self._request("POST", path, params, json=json_body)
@@ -239,15 +254,15 @@ class _AsyncOddsResource:
     ) -> APIResponse[list[OddsLine]]:
         """Get side-by-side odds comparison for an event."""
         data = await self._client._get("/odds/comparison", {
-            "event_id": event_id,
+            "event": event_id,
             "market": market,
         })
         return parse_response(data, OddsLine)
 
-    async def batch(self, event_ids: list[str]) -> APIResponse[list[OddsLine]]:
+    async def batch(self, event_ids: list[str]) -> APIResponse[OddsBatchResponse]:
         """Batch odds lookup for multiple events."""
         data = await self._client._post("/odds/batch", {"event_ids": event_ids})
-        return parse_response(data, OddsLine)
+        return parse_object_response(data, OddsBatchResponse)
 
     async def closing(
         self,
@@ -353,6 +368,23 @@ class _AsyncArbitrageResource:
             "offset": offset,
         })
         return parse_response(data, ArbitrageOpportunity)
+
+    async def csv(
+        self,
+        *,
+        sport: str | list[str] | None = None,
+        league: str | list[str] | None = None,
+        min_profit: float | None = None,
+        limit: int | None = None,
+    ) -> str:
+        """Get arbitrage opportunities as CSV text."""
+        return await self._client._get_text("/opportunities/arbitrage", {
+            "sport": sport,
+            "league": league,
+            "min_profit": min_profit,
+            "limit": limit,
+            "format": "csv",
+        })
 
 
 class _AsyncMiddlesResource:

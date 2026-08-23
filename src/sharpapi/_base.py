@@ -20,7 +20,7 @@ from .models import APIResponse, RateLimitInfo, ResponseMeta
 
 DEFAULT_BASE_URL = "https://api.sharpapi.io"
 DEFAULT_TIMEOUT = 30.0
-USER_AGENT = "sharpapi-python/0.2.5"
+USER_AGENT = "sharpapi-python/0.4.1"
 
 # Supported REST authentication methods. SSE always uses ``?api_key=`` query
 # regardless of this setting because EventSource cannot set custom headers.
@@ -55,26 +55,44 @@ def retry_delay(attempt: int) -> float:
     return random.uniform(0, ceiling)
 
 
+def _parse_meta(raw: dict) -> ResponseMeta | None:
+    meta_raw = dict(raw.get("meta") or {})
+    if raw.get("pagination") is not None:
+        meta_raw["pagination"] = raw["pagination"]
+    if raw.get("updated_at") is not None:
+        meta_raw["updated"] = raw["updated_at"]
+    return ResponseMeta.model_validate(meta_raw) if meta_raw else None
+
+
+def _api_response(raw: dict, data: object, meta: ResponseMeta | None) -> APIResponse:
+    return APIResponse(
+        success=raw.get("success"),
+        data=data,
+        meta=meta,
+        pagination=meta.pagination if meta else None,
+        updated_at=raw.get("updated_at"),
+        timestamp=raw.get("timestamp"),
+        tier=raw.get("tier"),
+    )
+
+
 def parse_response(raw: dict, model_class: type) -> APIResponse:
-    """Parse raw API JSON into a typed APIResponse."""
+    """Parse raw API JSON list data into a typed APIResponse."""
     data_raw = raw.get("data", [])
     if isinstance(data_raw, list):
         items = [model_class.model_validate(item) for item in data_raw]
     else:
         items = [model_class.model_validate(data_raw)]
 
-    meta = None
-    meta_raw = raw.get("meta")
-    if meta_raw:
-        meta = ResponseMeta.model_validate(meta_raw)
+    return _api_response(raw, items, _parse_meta(raw))
 
-    return APIResponse(
-        success=raw.get("success"),
-        data=items,
-        meta=meta,
-        timestamp=raw.get("timestamp"),
-        tier=raw.get("tier"),
-    )
+
+def parse_object_response(raw: dict, model_class: type) -> APIResponse:
+    """Parse raw API JSON object data into a typed APIResponse."""
+    data_raw = raw.get("data", raw)
+    item = model_class.model_validate(data_raw)
+
+    return _api_response(raw, item, _parse_meta(raw))
 
 
 def parse_rate_limit(response: httpx.Response) -> RateLimitInfo:

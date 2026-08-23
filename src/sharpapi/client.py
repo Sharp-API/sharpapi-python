@@ -16,6 +16,7 @@ from ._base import (
     handle_errors,
     make_headers,
     normalize_base_url,
+    parse_object_response,
     parse_rate_limit,
     parse_response,
     retry_delay,
@@ -35,6 +36,7 @@ from .models import (
     LowHoldOpportunity,
     Market,
     MiddleOpportunity,
+    OddsBatchResponse,
     OddsLine,
     RateLimitInfo,
     Sport,
@@ -127,7 +129,15 @@ class SharpAPI:
         """Rate limit info from the last request."""
         return self._last_rate_limit
 
-    def _request(self, method: str, path: str, params: dict | None = None, **kwargs) -> Any:
+    def _request(
+        self,
+        method: str,
+        path: str,
+        params: dict | None = None,
+        *,
+        response_format: str = "json",
+        **kwargs,
+    ) -> Any:
         """Make an API request and return parsed JSON. Retries 502/503/504 with jittered backoff."""
         if params:
             params = _clean_params(params)
@@ -150,10 +160,15 @@ class SharpAPI:
         assert response is not None
         self._last_rate_limit = parse_rate_limit(response)
         handle_errors(response)
+        if response_format == "text":
+            return response.text
         return response.json()
 
     def _get(self, path: str, params: dict | None = None) -> Any:
         return self._request("GET", path, params)
+
+    def _get_text(self, path: str, params: dict | None = None) -> str:
+        return self._request("GET", path, params, response_format="text")
 
     def _post(self, path: str, json_body: Any = None, params: dict | None = None) -> Any:
         return self._request("POST", path, params, json=json_body)
@@ -263,15 +278,15 @@ class _OddsResource:
     ) -> APIResponse[list[OddsLine]]:
         """Get side-by-side odds comparison for an event."""
         data = self._client._get("/odds/comparison", {
-            "event_id": event_id,
+            "event": event_id,
             "market": market,
         })
         return _parse_response(data, OddsLine)
 
-    def batch(self, event_ids: list[str]) -> APIResponse[list[OddsLine]]:
+    def batch(self, event_ids: list[str]) -> APIResponse[OddsBatchResponse]:
         """Batch odds lookup for multiple events."""
         data = self._client._post("/odds/batch", {"event_ids": event_ids})
-        return _parse_response(data, OddsLine)
+        return parse_object_response(data, OddsBatchResponse)
 
     def closing(
         self,
@@ -428,18 +443,13 @@ class _ArbitrageResource:
         limit: int | None = None,
     ) -> str:
         """Get arbitrage opportunities as CSV text."""
-        data = self._client._get("/opportunities/arbitrage", {
+        return self._client._get_text("/opportunities/arbitrage", {
             "sport": sport,
             "league": league,
             "min_profit": min_profit,
             "limit": limit,
             "format": "csv",
         })
-        # CSV format returns raw text, but our _get parses JSON.
-        # The server returns JSON-wrapped CSV or raw text.
-        if isinstance(data, dict) and "data" in data:
-            return data["data"]
-        return str(data)
 
 
 class _MiddlesResource:
@@ -817,7 +827,9 @@ class _StreamResource:
         market: str | list[str] | None = None,
     ) -> EventStream:
         """Stream updates for a single event."""
-        return self._build_stream(f"/stream/events/{event_id}", {
+        return self._build_stream("/stream", {
+            "channel": "odds",
+            "event": event_id,
             "sportsbook": sportsbook,
             "market": market,
         })
@@ -829,7 +841,7 @@ class _StreamResource:
         ``gamestate:update`` / ``gamestate:removed`` events. Requires the
         Game State add-on or Enterprise tier.
         """
-        return self._build_stream("/stream/gamestate")
+        return self._build_stream("/stream", {"channel": "gamestate"})
 
 
 # =============================================================================

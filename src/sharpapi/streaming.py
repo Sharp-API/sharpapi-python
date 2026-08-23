@@ -173,6 +173,9 @@ class EventStream:
                 for event_type, data in _parse_sse(response.iter_lines()):
                     if not self._running:
                         break
+                    if event_type == "__id__":
+                        self._last_event_id = data
+                        continue
                     if event_type == "__retry__":
                         # Server advised a new reconnect delay — store but don't dispatch.
                         self._retry_ms = data
@@ -203,6 +206,12 @@ class EventStream:
                 for event_type, data in _parse_sse(response.iter_lines()):
                     if not self._running:
                         break
+                    if event_type == "__id__":
+                        self._last_event_id = data
+                        continue
+                    if event_type == "__retry__":
+                        self._retry_ms = data
+                        continue
                     yield event_type, data
 
 
@@ -221,7 +230,7 @@ def _parse_sse(lines: Iterator[str]) -> Iterator[tuple[str, Any]]:
         elif line.startswith("data:"):
             data_lines.append(line[5:].strip())
         elif line.startswith("id:"):
-            pass  # Tracked by httpx/EventSource
+            yield "__id__", line[3:].strip()
         elif line.startswith("retry:"):
             try:
                 yield "__retry__", int(line[6:].strip())

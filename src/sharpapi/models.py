@@ -84,11 +84,15 @@ class EntityRef(BaseModel):
 
 
 class Pagination(BaseModel):
-    limit: int
-    offset: int
-    has_more: bool
+    limit: int | None = None
+    offset: int | None = None
+    count: int | None = None
+    has_more: bool | None = None
     next_offset: int | None = None
+    next_cursor: str | None = None
     total: int | None = None
+
+    model_config = {"extra": "allow"}
 
 
 class ResponseMeta(BaseModel):
@@ -105,6 +109,8 @@ class ResponseMeta(BaseModel):
     summary: dict[str, Any] | None = None
     books_analyzed: int | None = None
 
+    model_config = {"extra": "allow"}
+
 
 class APIResponse(BaseModel, Generic[T]):
     """Standard API response wrapper."""
@@ -112,8 +118,12 @@ class APIResponse(BaseModel, Generic[T]):
     success: bool | None = None
     data: T
     meta: ResponseMeta | None = None
+    pagination: Pagination | None = None
+    updated_at: str | None = None
     timestamp: str | None = None
     tier: str | None = None
+
+    model_config = {"extra": "allow"}
 
     def to_dataframe(self, flatten: bool = True):
         """Convert response data to a pandas DataFrame.
@@ -222,18 +232,27 @@ class OddsLine(BaseModel):
     market_segment: str | None = None
     odds_american: int | float
     odds_decimal: float
-    probability: float
+    probability: float = Field(validation_alias=AliasChoices("odds_probability", "probability"))
     line: float | None = None
     event_start_time: str | None = None
+    event_uuid: str | None = None
+    external_event_id: str | None = None
+    market_id: str | None = None
+    selection_id: str | None = None
     # ISO 8601 — when SharpAPI last refreshed this odd through its pipeline
     # (advances every ingest cycle). A feed-freshness / delivery signal matching
     # OpticOdds' `timestamp`; NOT a price-last-changed time. (SHA-1048)
     timestamp: str | None = None
     is_live: bool = False
+    is_alternate_line: bool = False
+    is_main_line: bool | None = None
+    is_player_prop: bool = False
+    is_stale_pregame_price: bool | None = None
     # True (default) = market open and bettable; False = market suspended/closed
     # with the price frozen (mirrors OpticOdds locked-odds). Absent on the wire
     # is treated as True. SHA-3803.
     is_active: bool = True
+    max_bet: float | None = None
     deep_link: str | None = None
     player_name: str | None = None
     stat_category: str | None = None
@@ -244,6 +263,17 @@ class OddsLine(BaseModel):
     league_ref: EntityRef | None = None
     market_ref: EntityRef | None = None
     sportsbook_ref: EntityRef | None = None
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
+
+
+class OddsBatchResponse(BaseModel):
+    """Response body returned by ``POST /odds/batch``."""
+
+    events: dict[str, list[OddsLine]] = Field(default_factory=dict)
+    missing_events: list[str] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
 
 
 # =============================================================================
@@ -275,6 +305,7 @@ class EVOpportunity(BaseModel):
         None, validation_alias=AliasChoices("kelly_percent", "kelly_fraction")
     )
     confidence_score: float | None = None
+    confidence: float | None = None
     book_count: int | None = None
     market_width: float | None = None
     devig_method: str | None = None
@@ -284,21 +315,33 @@ class EVOpportunity(BaseModel):
     sharp_odds_american: int | float | None = None
     sharp_odds_decimal: float | None = None
     line: float | None = None
+    market_id: str | None = None
+    odds_probability: float | None = None
+    partner_fair_probability: float | None = None
     home_team: str | None = None
     away_team: str | None = None
     start_time: str | None = None
     is_live: bool = False
     arb_available: bool | None = None
     arb_profit: float | None = None
+    is_alternate_line: bool = False
     is_player_prop: bool = False
     player_name: str | None = None
+    player_id: str | None = None
     stat_category: str | None = None
     possibly_stale: bool = False
     oldest_odds_age_seconds: float | None = None
     warnings: list[str] = Field(default_factory=list)
     detected_at: str | None = None
+    deep_link: str | None = None
+    display_selection: str | None = None
+    est_correction_s: float | None = None
     external_event_id: str | None = None
     selection_id: str | None = None
+    cross_ref_count: int | None = None
+    cross_ref_dispersion: float | None = None
+    single_sharp_period: bool | None = None
+    sportsbooks: list[str] | None = None
     # Structured side/segment axes (issue #76 / #689), additive + optional.
     team_side: str | None = None
     market_segment: str | None = None
@@ -316,7 +359,7 @@ class EVOpportunity(BaseModel):
     market_ref: EntityRef | None = None
     sportsbook_ref: EntityRef | None = None
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 # =============================================================================
@@ -339,8 +382,13 @@ class ArbitrageLeg(BaseModel):
     external_event_id: str | None = None
     selection_id: str | None = None
     market_id: str | None = None
+    deep_link: str | None = None
+    odds_id: str | None = None
+    odds_probability: float | None = None
     # Optional structured book ref on each leg.
     sportsbook_ref: EntityRef | None = None
+
+    model_config = {"extra": "allow"}
 
 
 class ArbitrageOpportunity(BaseModel):
@@ -351,7 +399,9 @@ class ArbitrageOpportunity(BaseModel):
     event_name: str
     sport: str
     league: str | None = None
+    league_label: str | None = None
     market_type: str
+    market_label: str | None = None
     line: float | None = None
     profit_percent: float
     implied_total: float | None = None
@@ -376,6 +426,8 @@ class ArbitrageOpportunity(BaseModel):
     league_ref: EntityRef | None = None
     market_ref: EntityRef | None = None
 
+    model_config = {"extra": "allow"}
+
 
 # =============================================================================
 # Middle Opportunities
@@ -388,10 +440,19 @@ class MiddleSide(BaseModel):
     book: str
     selection: str
     line: float
-    odds: OddsValue
+    odds: OddsValue | None = None
+    odds_american: int | float | None = None
+    odds_decimal: float | None = None
+    odds_probability: float | None = None
     stake_percent: float | None = None
     odds_age_seconds: float | None = None
     deep_link: str | None = None
+    external_event_id: str | None = None
+    fair_probability: float | None = None
+    market_id: str | None = None
+    selection_id: str | None = None
+
+    model_config = {"extra": "allow"}
 
 
 class MiddleOpportunity(BaseModel):
@@ -402,18 +463,23 @@ class MiddleOpportunity(BaseModel):
     event_name: str
     sport: str
     league: str | None = None
+    league_label: str | None = None
     market_type: str
+    market_label: str | None = None
     home_team: str | None = None
     away_team: str | None = None
     start_time: str | None = None
     side1: MiddleSide | None = None
     side2: MiddleSide | None = None
+    alt_side1: list[dict[str, Any]] | None = None
+    alt_side2: list[dict[str, Any]] | None = None
     middle_size: float | None = None
     middle_numbers: list[int] | None = None
     middle_probability: float | None = None
     expected_value: float | None = None
     roi_percentage: float | None = None
     worst_case_loss: float | None = None
+    worst_case_pnl: float | None = None
     best_case_profit: float | None = None
     break_even_percent: float | None = None
     is_guaranteed_profit: bool = False
@@ -423,6 +489,8 @@ class MiddleOpportunity(BaseModel):
     quality_score: float | None = None
     market_overround: float | None = None
     is_live: bool = False
+    is_team_total: bool | None = None
+    team_name: str | None = None
     is_player_prop: bool = False
     player_name: str | None = None
     stat_category: str | None = None
@@ -440,7 +508,7 @@ class MiddleOpportunity(BaseModel):
     league_ref: EntityRef | None = None
     market_ref: EntityRef | None = None
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 # =============================================================================
@@ -455,7 +523,16 @@ class LowHoldSide(BaseModel):
     books: list[str] | None = None
     line: float | None = None
     odds: OddsValue | None = None
+    odds_american: int | float | None = None
+    odds_decimal: float | None = None
+    odds_probability: float | None = None
+    external_event_id: str | None = None
+    fair_probability: float | None = None
+    market_id: str | None = None
+    selection_id: str | None = None
     deep_links: dict[str, str] | None = None
+
+    model_config = {"extra": "allow"}
 
 
 class LowHoldOpportunity(BaseModel):
@@ -466,7 +543,9 @@ class LowHoldOpportunity(BaseModel):
     event_name: str
     sport: str
     league: str | None = None
+    league_label: str | None = None
     market_type: str
+    market_label: str | None = None
     line: float | None = None
     home_team: str | None = None
     away_team: str | None = None
@@ -492,6 +571,8 @@ class LowHoldOpportunity(BaseModel):
     league_ref: EntityRef | None = None
     market_ref: EntityRef | None = None
 
+    model_config = {"extra": "allow"}
+
 
 # =============================================================================
 # Reference Data
@@ -501,33 +582,56 @@ class LowHoldOpportunity(BaseModel):
 class Sport(BaseModel):
     id: str
     name: str
-    slug: str
-    active: bool
+    slug: str | None = None
+    active: bool | None = None
     event_count: int | None = None
+    live_count: int | None = None
+    leagues: list[str] | None = None
     # Optional integer numerical ID, additive.
     numerical_id: int | None = None
+
+    model_config = {"extra": "allow"}
 
 
 class League(BaseModel):
     id: str
-    name: str
-    slug: str
+    name: str | None = Field(None, validation_alias=AliasChoices("name", "display_name"))
+    display_name: str | None = None
+    slug: str | None = None
     sport_id: str | None = None
+    sport: str | None = None
     country: str | None = None
-    active: bool
+    active: bool | None = None
+    event_count: int | None = None
+    live_count: int | None = None
     # Optional integer numerical ID, additive.
     numerical_id: int | None = None
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class Sportsbook(BaseModel):
     id: str
-    name: str
-    slug: str
-    active: bool
+    name: str | None = Field(None, validation_alias=AliasChoices("name", "display_name"))
+    display_name: str | None = None
+    short_name: str | None = None
+    slug: str | None = None
+    active: bool | None = None
     regions: list[str] | None = None
     features: list[str] | None = None
+    category: str | None = None
+    is_sharp: bool | None = None
+    has_live_odds: bool | None = None
+    has_player_props: bool | None = None
+    requires_tier: str | None = None
+    status: str | None = None
+    event_count: int | None = None
+    last_update: str | None = None
+    coming_soon: bool | None = None
     # Optional integer numerical ID, additive.
     numerical_id: int | None = None
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class Team(BaseModel):
@@ -537,11 +641,13 @@ class Team(BaseModel):
     absent for individual-sport competitors.
     """
 
-    id: str
+    id: str | None = None
     name: str | None = None
     sport: str | None = None
     league: str | None = None
     abbreviation: str | None = None
+    logo: str | None = None
+    event_count: int | None = None
     numerical_id: int | None = None
 
     model_config = {"extra": "allow"}
@@ -549,6 +655,8 @@ class Team(BaseModel):
 
 class Event(BaseModel):
     id: str
+    uuid: str | None = None
+    external_ids: dict[str, str] | None = None
     sport: str
     league: str
     home_team: str
@@ -556,23 +664,35 @@ class Event(BaseModel):
     start_time: str | None = None
     is_live: bool = False
     status: str | None = None
+    book_count: int | None = None
+    market_count: int | None = None
+    markets: list[str] | None = None
+    books: list[str] | None = None
     # Optional structured refs (additive, non-breaking).
     home: TeamRef | None = None
     away: TeamRef | None = None
     sport_ref: SportRef | None = None
     league_ref: EntityRef | None = None
 
+    model_config = {"extra": "allow"}
+
 
 class Market(BaseModel):
     """A market available on an event."""
 
-    market_type: str
-    market_label: str | None = None
+    market_type: str | None = Field(None, validation_alias=AliasChoices("market_type", "id"))
+    id: str | None = None
+    name: str | None = None
+    market_label: str | None = Field(None, validation_alias=AliasChoices("market_label", "name"))
     selection_count: int | None = None
     book_count: int | None = None
     books: list[str] | None = None
+    event_count: int | None = None
+    sports: list[str] | None = None
     # Optional integer numerical ID, additive.
     numerical_id: int | None = None
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 # =============================================================================
@@ -648,6 +768,8 @@ class AccountLimits(BaseModel):
     odds_delay_seconds: int | None = None
     max_books: int | None = None
 
+    model_config = {"extra": "allow"}
+
 
 class AccountFeatures(BaseModel):
     ev: bool = False
@@ -655,12 +777,34 @@ class AccountFeatures(BaseModel):
     middles: bool = False
     streaming: bool = False
 
+    model_config = {"extra": "allow"}
+
+
+class AccountRateLimit(BaseModel):
+    max_books: int | None = None
+    requests_per_minute: int | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class AccountStreaming(BaseModel):
+    enabled: bool | None = None
+    max_connections: int | None = None
+
+    model_config = {"extra": "allow"}
+
 
 class AccountInfo(BaseModel):
     key: dict[str, Any] | None = None
+    key_id: str | None = None
+    tier: str | None = None
     limits: AccountLimits | None = None
-    features: AccountFeatures | None = None
+    features: list[str] | AccountFeatures | None = None
+    rate_limit: AccountRateLimit | None = None
+    streaming: AccountStreaming | None = None
     add_ons: list[str] | None = None
+
+    model_config = {"extra": "allow"}
 
 
 class RateLimitInfo(BaseModel):

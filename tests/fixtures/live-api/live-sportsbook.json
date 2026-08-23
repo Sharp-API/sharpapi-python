@@ -1,0 +1,18 @@
+{
+  "id": "saba",
+  "display_name": "SABA",
+  "short_name": "SABA",
+  "numerical_id": 32,
+  "category": "regional",
+  "is_sharp": false,
+  "has_live_odds": true,
+  "has_player_props": true,
+  "regions": [
+    "GLOBAL"
+  ],
+  "requires_tier": "pro",
+  "status": "active",
+  "event_count": 4022,
+  "last_update": "2026-06-27T02:10:55.892147374Z",
+  "coming_soon": false
+}
