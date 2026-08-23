@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Generic, TypeVar
 
-from pydantic import AliasChoices, BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field, model_validator
 
 T = TypeVar("T")
 
@@ -113,6 +113,8 @@ class APIResponse(BaseModel, Generic[T]):
     data: T
     meta: ResponseMeta | None = None
     timestamp: str | None = None
+    # Top-level freshness stamp sent by the list endpoints.
+    updated_at: str | None = None
     tier: str | None = None
 
     def to_dataframe(self, flatten: bool = True):
@@ -222,7 +224,12 @@ class OddsLine(BaseModel):
     market_segment: str | None = None
     odds_american: int | float
     odds_decimal: float
-    probability: float
+    # The wire names this third sibling ``odds_probability`` — the ``odds_``
+    # prefix it kept on the other two. ``probability`` stays the public
+    # attribute; the alias is what makes /odds parseable at all (issue #23).
+    probability: float = Field(
+        validation_alias=AliasChoices("odds_probability", "probability")
+    )
     line: float | None = None
     event_start_time: str | None = None
     # ISO 8601 — when SharpAPI last refreshed this odd through its pipeline
@@ -244,6 +251,60 @@ class OddsLine(BaseModel):
     league_ref: EntityRef | None = None
     market_ref: EntityRef | None = None
     sportsbook_ref: EntityRef | None = None
+
+
+# =============================================================================
+# Best Odds  (GET /odds/best)
+# =============================================================================
+#
+# /odds/best does NOT return OddsLine rows. It returns one row per selection
+# with the best price, the consensus price, and every book's quote — a
+# different shape entirely. It was typed as ``list[OddsLine]``, so the call
+# raised ValidationError on every response (issue #23).
+
+
+class BestOddsQuote(BaseModel):
+    """A price block as it appears inside a /odds/best row."""
+
+    american: int | float | None = None
+    decimal: float | None = None
+    probability: float | None = Field(
+        None, validation_alias=AliasChoices("odds_probability", "probability")
+    )
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
+
+
+class BestOddsBook(BaseModel):
+    """One book's quote within ``BestOddsSelection.all_books``."""
+
+    book: str | None = None
+    sportsbook: str | None = None
+    odds: BestOddsQuote | None = None
+    edge: float | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class BestOddsSelection(BaseModel):
+    """One selection's best price across all books."""
+
+    event_id: str
+    event_name: str | None = None
+    sport: str | None = None
+    league: str | None = None
+    market_type: str | None = None
+    selection: str | None = None
+    line: float | None = None
+    is_main_line: bool | None = None
+    best_odds: BestOddsQuote | None = None
+    consensus_odds: BestOddsQuote | None = None
+    market_hold: float | None = None
+    best_book: str | None = None
+    all_books: list[BestOddsBook] = Field(default_factory=list)
+    timestamp: str | None = None
+
+    model_config = {"extra": "allow"}
 
 
 # =============================================================================
@@ -520,33 +581,82 @@ class LowHoldOpportunity(BaseModel):
 class Sport(BaseModel):
     id: str
     name: str
-    slug: str
-    active: bool
+    # ``slug`` and ``active`` have never appeared on /sports. They were
+    # declared required and made every ``sports.list()`` call raise
+    # ValidationError (issue #23). Optional, so existing readers still
+    # type-check — they now read ``None`` instead of crashing.
+    slug: str | None = None
+    active: bool | None = None
     event_count: int | None = None
+    live_count: int | None = None
+    # League ids belonging to this sport — the wire sends bare id strings.
+    leagues: list[str] | None = None
     # Optional integer numerical ID, additive.
     numerical_id: int | None = None
+
+    model_config = {"extra": "allow"}
 
 
 class League(BaseModel):
     id: str
-    name: str
-    slug: str
+    # The wire calls this ``display_name``. Aliased rather than renamed so
+    # ``league.name`` keeps working for anyone already reading it.
+    name: str = Field(validation_alias=AliasChoices("display_name", "name"))
+    # Never sent by /leagues — see the note on ``Sport`` (issue #23).
+    slug: str | None = None
+    active: bool | None = None
+    # The wire sends the sport as ``sport``; ``sport_id`` is the legacy name.
+    sport: str | None = None
     sport_id: str | None = None
     country: str | None = None
-    active: bool
+    event_count: int | None = None
+    live_count: int | None = None
     # Optional integer numerical ID, additive.
     numerical_id: int | None = None
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class Sportsbook(BaseModel):
     id: str
-    name: str
-    slug: str
-    active: bool
+    # As on ``League``: the wire calls this ``display_name``.
+    name: str = Field(validation_alias=AliasChoices("display_name", "name"))
+    short_name: str | None = None
+    # Never sent by /sportsbooks — see the note on ``Sport`` (issue #23).
+    slug: str | None = None
+    # The wire carries availability as the STRING ``status`` ("active",
+    # "outage", ...), not a boolean. ``active`` is derived from it below so
+    # that existing ``book.active`` readers keep working.
+    status: str | None = None
+    active: bool | None = None
+    coming_soon: bool | None = None
+    category: str | None = None
+    is_sharp: bool | None = None
+    has_live_odds: bool | None = None
+    has_player_props: bool | None = None
+    requires_tier: str | None = None
+    event_count: int | None = None
+    last_update: str | None = None
     regions: list[str] | None = None
     features: list[str] | None = None
     # Optional integer numerical ID, additive.
     numerical_id: int | None = None
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
+
+    @model_validator(mode="before")
+    @classmethod
+    def _derive_active_from_status(cls, data: Any) -> Any:
+        """Populate ``active`` from the wire's ``status`` string.
+
+        Only fills the gap — an explicit ``active`` in the payload wins, so
+        this cannot mask a future wire change that starts sending both.
+        """
+        if isinstance(data, dict) and data.get("active") is None:
+            status = data.get("status")
+            if isinstance(status, str):
+                data = {**data, "active": status.lower() == "active"}
+        return data
 
 
 class Team(BaseModel):
@@ -669,17 +779,45 @@ class AccountLimits(BaseModel):
 
 
 class AccountFeatures(BaseModel):
+    """Legacy shape of ``AccountInfo.features``.
+
+    The wire moved to a flat list of feature names; this class is retained so
+    imports of it keep resolving, but ``AccountInfo.features`` is now a
+    ``list[str]``. See ``AccountInfo.has_feature``.
+    """
+
     ev: bool = False
     arbitrage: bool = False
     middles: bool = False
     streaming: bool = False
 
 
+class AccountStreaming(BaseModel):
+    enabled: bool | None = None
+    max_connections: int | None = None
+
+    model_config = {"extra": "allow"}
+
+
 class AccountInfo(BaseModel):
     key: dict[str, Any] | None = None
+    key_id: str | None = None
+    tier: str | None = None
     limits: AccountLimits | None = None
-    features: AccountFeatures | None = None
+    # The wire calls the same block ``rate_limit``.
+    rate_limit: AccountLimits | None = None
+    # The wire sends a flat list of enabled feature names, e.g.
+    # ``["odds", "ev", "arbitrage"]``. It was declared as an object of
+    # booleans, which made every ``account.me()`` call raise (issue #23).
+    features: list[str] = Field(default_factory=list)
+    streaming: AccountStreaming | None = None
     add_ons: list[str] | None = None
+
+    model_config = {"extra": "allow"}
+
+    def has_feature(self, name: str) -> bool:
+        """Whether ``name`` is enabled, replacing the old ``features.<name>``."""
+        return name in self.features
 
 
 class RateLimitInfo(BaseModel):

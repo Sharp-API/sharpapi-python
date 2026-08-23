@@ -1,0 +1,12 @@
+{
+  "data": null,
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "count": 0,
+    "total": 0,
+    "has_more": false,
+    "next_offset": null
+  },
+  "updated_at": "2026-08-23T18:09:04.837201045Z"
+}

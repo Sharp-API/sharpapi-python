@@ -1,0 +1,60 @@
+{
+  "data": [
+    {
+      "id": "betonline",
+      "display_name": "BetOnline",
+      "short_name": "BetOnline",
+      "numerical_id": 10,
+      "category": "regional",
+      "is_sharp": false,
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": [
+        "US"
+      ],
+      "requires_tier": "hobby",
+      "status": "active",
+      "event_count": 4004,
+      "last_update": "2026-08-23T18:08:46.972587302Z",
+      "coming_soon": false
+    },
+    {
+      "id": "saba",
+      "display_name": "SABA",
+      "short_name": "SABA",
+      "numerical_id": 32,
+      "category": "regional",
+      "is_sharp": false,
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": [
+        "GLOBAL"
+      ],
+      "requires_tier": "pro",
+      "status": "active",
+      "event_count": 2460,
+      "last_update": "2026-08-23T18:09:05.3226512Z",
+      "coming_soon": false
+    },
+    {
+      "id": "kalshi",
+      "display_name": "Kalshi",
+      "short_name": "Kalshi",
+      "numerical_id": 22,
+      "category": "exchange",
+      "is_sharp": false,
+      "has_live_odds": true,
+      "has_player_props": false,
+      "regions": [
+        "US"
+      ],
+      "requires_tier": "hobby",
+      "status": "active",
+      "event_count": 2270,
+      "last_update": "2026-08-23T18:09:05.355019583Z",
+      "coming_soon": false
+    }
+  ],
+  "retired": [],
+  "updated_at": "2026-08-23T18:09:04.837201045Z"
+}

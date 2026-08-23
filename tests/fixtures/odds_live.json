@@ -1,0 +1,148 @@
+{
+  "data": [
+    {
+      "id": "125714096529045",
+      "sportsbook": "betano",
+      "event_id": "campeonato_gpo_boer_carazo_2026-08-23_b2",
+      "event_uuid": "90807f1938cfdf42",
+      "sport": "baseball",
+      "league": "campeonato_gpo",
+      "home_team": "Carazo",
+      "away_team": "Boer",
+      "market_type": "run_line",
+      "selection": "Boer",
+      "selection_type": "away",
+      "odds_american": 130,
+      "odds_decimal": 2.3,
+      "odds_probability": 0.4348,
+      "line": -1.5,
+      "event_start_time": "2026-08-23T17:00:00Z",
+      "is_live": true,
+      "is_active": true,
+      "timestamp": "2026-08-23T18:08:56.820033175Z",
+      "deep_link": "https://api.sharpapi.io/api/v1/deeplink/125714096529045",
+      "market_id": "2921663015",
+      "selection_id": "10262687589",
+      "is_alternate_line": false,
+      "is_main_line": false,
+      "is_stale_pregame_price": false,
+      "is_player_prop": false,
+      "is_impossible_scoreline": false,
+      "sport_ref": {
+        "id": "baseball",
+        "name": "Baseball",
+        "numerical_id": 3
+      },
+      "market_ref": {
+        "id": "run_line",
+        "label": "Run Line",
+        "numerical_id": 1221
+      },
+      "sportsbook_ref": {
+        "id": "betano",
+        "label": "Betano",
+        "numerical_id": 7
+      },
+      "external_event_id": "bn-91194732"
+    },
+    {
+      "id": "251890577968448",
+      "sportsbook": "betano",
+      "event_id": "campeonato_gpo_boer_carazo_2026-08-23_b2",
+      "event_uuid": "90807f1938cfdf42",
+      "sport": "baseball",
+      "league": "campeonato_gpo",
+      "home_team": "Carazo",
+      "away_team": "Boer",
+      "market_type": "run_line",
+      "selection": "Carazo",
+      "selection_type": "home",
+      "odds_american": -182,
+      "odds_decimal": 1.549,
+      "odds_probability": 0.6454,
+      "line": 1.5,
+      "event_start_time": "2026-08-23T17:00:00Z",
+      "is_live": true,
+      "is_active": true,
+      "timestamp": "2026-08-23T18:08:56.820033175Z",
+      "deep_link": "https://api.sharpapi.io/api/v1/deeplink/251890577968448",
+      "market_id": "2921663015",
+      "selection_id": "10262687588",
+      "is_alternate_line": false,
+      "is_main_line": false,
+      "is_stale_pregame_price": false,
+      "is_player_prop": false,
+      "is_impossible_scoreline": false,
+      "sport_ref": {
+        "id": "baseball",
+        "name": "Baseball",
+        "numerical_id": 3
+      },
+      "market_ref": {
+        "id": "run_line",
+        "label": "Run Line",
+        "numerical_id": 1221
+      },
+      "sportsbook_ref": {
+        "id": "betano",
+        "label": "Betano",
+        "numerical_id": 7
+      },
+      "external_event_id": "bn-91194732"
+    },
+    {
+      "id": "213710601041846",
+      "sportsbook": "betano",
+      "event_id": "campeonato_gpo_boer_carazo_2026-08-23_b2",
+      "event_uuid": "90807f1938cfdf42",
+      "sport": "baseball",
+      "league": "campeonato_gpo",
+      "home_team": "Carazo",
+      "away_team": "Boer",
+      "market_type": "total_runs",
+      "selection": "Mais de",
+      "selection_type": "other",
+      "odds_american": -111,
+      "odds_decimal": 1.901,
+      "odds_probability": 0.5261,
+      "line": 9.5,
+      "event_start_time": "2026-08-23T17:00:00Z",
+      "is_live": true,
+      "is_active": true,
+      "timestamp": "2026-08-23T18:08:56.820033175Z",
+      "deep_link": "https://api.sharpapi.io/api/v1/deeplink/213710601041846",
+      "market_id": "2921663018",
+      "selection_id": "10262687594",
+      "is_alternate_line": false,
+      "is_main_line": false,
+      "is_stale_pregame_price": false,
+      "is_player_prop": false,
+      "is_impossible_scoreline": false,
+      "sport_ref": {
+        "id": "baseball",
+        "name": "Baseball",
+        "numerical_id": 3
+      },
+      "market_ref": {
+        "id": "total_runs",
+        "label": "Total Runs",
+        "numerical_id": 1352
+      },
+      "sportsbook_ref": {
+        "id": "betano",
+        "label": "Betano",
+        "numerical_id": 7
+      },
+      "external_event_id": "bn-91194732"
+    }
+  ],
+  "pagination": {
+    "limit": 3,
+    "offset": 0,
+    "count": 3,
+    "has_more": true,
+    "next_offset": 3,
+    "next_cursor": "eyJlIjoiY2FtcGVvbmF0b19ncG9fYm9lcl9jYXJhem9fMjAyNi0wOC0yM19iMiIsImIiOiJiZXRhbm8iLCJtIjoidG90YWxfcnVucyIsImkiOiIyMTM3MTA2MDEwNDE4NDYiLCJzIjoxNzg3NTA0NDAwMDAwMDAwMDAwLCJnIjozODA0NDEsInAiOjEyNTA2NDIwNjk4MjM0MTQ0Mzh9"
+  },
+  "updated_at": "2026-08-23T18:09:04.837201045Z"
+}

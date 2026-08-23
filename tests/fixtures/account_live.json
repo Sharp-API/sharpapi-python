@@ -1,0 +1,29 @@
+{
+  "data": {
+    "features": [
+      "odds",
+      "schedule",
+      "ev",
+      "arbitrage",
+      "middles",
+      "low_hold",
+      "steam",
+      "history",
+      "futures",
+      "closing_line",
+      "splits",
+      "injuries"
+    ],
+    "key_id": "internal",
+    "rate_limit": {
+      "max_books": 999,
+      "requests_per_minute": 10000
+    },
+    "streaming": {
+      "enabled": true,
+      "max_connections": 50
+    },
+    "tier": "enterprise"
+  },
+  "updated_at": "2026-08-23T18:09:04.837201045Z"
+}

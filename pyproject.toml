@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sharpapi"
-version = "0.4.1"
+version = "0.4.2"
 description = "Official Python SDK for the SharpAPI real-time sports betting odds API"
 readme = "README.md"
 license = "MIT"

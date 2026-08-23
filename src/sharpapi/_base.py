@@ -57,7 +57,15 @@ def retry_delay(attempt: int) -> float:
 
 def parse_response(raw: dict, model_class: type) -> APIResponse:
     """Parse raw API JSON into a typed APIResponse."""
-    data_raw = raw.get("data", [])
+    # ``raw.get("data", [])`` looks equivalent but is not: the default only
+    # fires when the key is ABSENT. List endpoints send an explicit
+    # ``"data": null`` when nothing matches the filter, so ``None`` reached
+    # the validator and every empty result raised (issue #23). Seasonal and
+    # nasty — e.g. ``events.list(league="nba", live=True)`` fails all summer
+    # and appears to fix itself in October.
+    data_raw = raw.get("data")
+    if data_raw is None:
+        data_raw = []
     if isinstance(data_raw, list):
         items = [model_class.model_validate(item) for item in data_raw]
     else:
@@ -73,6 +81,7 @@ def parse_response(raw: dict, model_class: type) -> APIResponse:
         data=items,
         meta=meta,
         timestamp=raw.get("timestamp"),
+        updated_at=raw.get("updated_at"),
         tier=raw.get("tier"),
     )
 

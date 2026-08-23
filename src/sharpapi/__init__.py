@@ -32,10 +32,14 @@ from .exceptions import (
 )
 from .models import (
     AccountInfo,
+    AccountStreaming,
     APIKey,
     APIResponse,
     ArbitrageLeg,
     ArbitrageOpportunity,
+    BestOddsBook,
+    BestOddsQuote,
+    BestOddsSelection,
     ClosingOddsLine,
     ClosingSnapshot,
     EntityRef,
@@ -61,7 +65,7 @@ from .models import (
 )
 from .streaming import EventStream
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 __all__ = [
     # Clients
@@ -71,8 +75,12 @@ __all__ = [
     "APIKey",
     "APIResponse",
     "AccountInfo",
+    "AccountStreaming",
     "ArbitrageLeg",
     "ArbitrageOpportunity",
+    "BestOddsBook",
+    "BestOddsQuote",
+    "BestOddsSelection",
     "ClosingOddsLine",
     "ClosingSnapshot",
     "EntityRef",

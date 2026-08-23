@@ -1,0 +1,38 @@
+{
+  "data": [
+    {
+      "id": "soccer",
+      "name": "Soccer",
+      "numerical_id": 24,
+      "event_count": 6008,
+      "live_count": 585,
+      "leagues": [
+        "1._bundesliga",
+        "1__liga"
+      ]
+    },
+    {
+      "id": "football",
+      "name": "Football",
+      "numerical_id": 12,
+      "event_count": 3369,
+      "live_count": 1,
+      "leagues": [
+        "canada_-_cfl",
+        "canada_-_cfl_futures"
+      ]
+    },
+    {
+      "id": "basketball",
+      "name": "Basketball",
+      "numerical_id": 4,
+      "event_count": 1816,
+      "live_count": 36,
+      "leagues": [
+        "argentina_-_primera_division",
+        "australia_-_nbl"
+      ]
+    }
+  ],
+  "updated_at": "2026-08-23T18:09:04.837201045Z"
+}
