@@ -1,0 +1,175 @@
+{
+  "data": [
+    {
+      "event_id": "campeonato_gpo_chontales_esteli_2026-08-23_b2",
+      "event_name": "Esteli @ Chontales",
+      "sport": "baseball",
+      "league": "campeonato_gpo",
+      "market_type": "run_line",
+      "selection": "Chontales",
+      "line": -4.5,
+      "is_main_line": true,
+      "best_odds": {
+        "american": 150,
+        "decimal": 2.5,
+        "probability": 0.4,
+        "odds_probability": 0.4
+      },
+      "consensus_odds": {
+        "american": 114,
+        "decimal": 2.1393,
+        "probability": 0.4674,
+        "odds_probability": 0.4674
+      },
+      "market_hold": 0,
+      "best_book": "hardrock",
+      "all_books": [
+        {
+          "book": "betano",
+          "sportsbook": "betano",
+          "odds": {
+            "american": -115,
+            "decimal": 1.8695652173913042
+          },
+          "edge": -12.61
+        },
+        {
+          "book": "hardrock",
+          "sportsbook": "hardrock",
+          "odds": {
+            "american": 150,
+            "decimal": 2.5
+          },
+          "edge": 16.86
+        }
+      ],
+      "timestamp": "2026-08-23T18:08:56.820033175Z"
+    },
+    {
+      "event_id": "campeonato_gpo_frentesurrivas_masaya_2026-08-23_b2",
+      "event_name": "Masaya @ Frente Sur Rivas",
+      "sport": "baseball",
+      "league": "campeonato_gpo",
+      "market_type": "run_line",
+      "selection": "Frente Sur Rivas",
+      "line": -1.5,
+      "is_main_line": true,
+      "best_odds": {
+        "american": 145,
+        "decimal": 2.45,
+        "probability": 0.4082,
+        "odds_probability": 0.4082
+      },
+      "consensus_odds": {
+        "american": 135,
+        "decimal": 2.3457,
+        "probability": 0.4263,
+        "odds_probability": 0.4263
+      },
+      "market_hold": 0,
+      "best_book": "hardrock",
+      "all_books": [
+        {
+          "book": "betano",
+          "sportsbook": "betano",
+          "odds": {
+            "american": 125,
+            "decimal": 2.25
+          },
+          "edge": -4.08
+        },
+        {
+          "book": "hardrock",
+          "sportsbook": "hardrock",
+          "odds": {
+            "american": 145,
+            "decimal": 2.45
+          },
+          "edge": 4.44
+        }
+      ],
+      "timestamp": "2026-08-23T18:08:56.820033175Z"
+    },
+    {
+      "event_id": "mexico_-_lmb_calientededurango_sultanesdemonterrey_2026-08-23_b3",
+      "event_name": "Caliente de Durango @ Sultanes de Monterrey",
+      "sport": "baseball",
+      "league": "mexico_-_lmb",
+      "market_type": "run_line",
+      "selection": "Caliente de Durango",
+      "line": 1.5,
+      "is_main_line": true,
+      "best_odds": {
+        "american": -190,
+        "decimal": 1.5263,
+        "probability": 0.6552,
+        "odds_probability": 0.6552
+      },
+      "consensus_odds": {
+        "american": -199,
+        "decimal": 1.5017,
+        "probability": 0.6659,
+        "odds_probability": 0.6659
+      },
+      "market_hold": 0,
+      "best_book": "hardrock",
+      "all_books": [
+        {
+          "book": "betway",
+          "sportsbook": "betway",
+          "odds": {
+            "american": -200,
+            "decimal": 1.5
+          },
+          "edge": -0.11
+        },
+        {
+          "book": "betmgm",
+          "sportsbook": "betmgm",
+          "odds": {
+            "american": -200,
+            "decimal": 1.5
+          },
+          "edge": -0.11
+        },
+        {
+          "book": "pinnacle",
+          "sportsbook": "pinnacle",
+          "odds": {
+            "american": -205,
+            "decimal": 1.4878048780487805
+          },
+          "edge": -0.93
+        },
+        {
+          "book": "hardrock",
+          "sportsbook": "hardrock",
+          "odds": {
+            "american": -190,
+            "decimal": 1.526315789473684
+          },
+          "edge": 1.64
+        },
+        {
+          "book": "onexbet",
+          "sportsbook": "onexbet",
+          "odds": {
+            "american": -202,
+            "decimal": 1.495049504950495
+          },
+          "edge": -0.44
+        }
+      ],
+      "timestamp": "2026-08-23T18:08:51.072129932Z"
+    }
+  ],
+  "pagination": {
+    "limit": 3,
+    "offset": 0,
+    "count": 3,
+    "total": 13793,
+    "has_more": true,
+    "next_offset": 3
+  },
+  "updated_at": "2026-08-23T18:09:11.524273953Z"
+}

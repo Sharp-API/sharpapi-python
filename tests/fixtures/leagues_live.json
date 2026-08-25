@@ -1,0 +1,29 @@
+{
+  "data": [
+    {
+      "id": "nfl",
+      "display_name": "NFL",
+      "numerical_id": 376,
+      "sport": "football",
+      "event_count": 1834,
+      "live_count": 0
+    },
+    {
+      "id": "ncaaf",
+      "display_name": "NCAAF",
+      "numerical_id": 367,
+      "sport": "football",
+      "event_count": 1051,
+      "live_count": 0
+    },
+    {
+      "id": "mlb",
+      "display_name": "MLB",
+      "numerical_id": 354,
+      "sport": "baseball",
+      "event_count": 857,
+      "live_count": 11
+    }
+  ],
+  "updated_at": "2026-08-23T18:09:04.837201045Z"
+}

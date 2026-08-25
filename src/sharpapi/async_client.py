@@ -27,6 +27,7 @@ from .models import (
     APIKey,
     APIResponse,
     ArbitrageOpportunity,
+    BestOddsSelection,
     ClosingSnapshot,
     Event,
     EVOpportunity,
@@ -216,7 +217,7 @@ class _AsyncOddsResource:
         add_sportsbook: str | list[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
-    ) -> APIResponse[list[OddsLine]]:
+    ) -> APIResponse[list[BestOddsSelection]]:
         """Get best odds per selection across all sportsbooks."""
         data = await self._client._get("/odds/best", {
             "sport": sport,
@@ -229,7 +230,7 @@ class _AsyncOddsResource:
             "limit": limit,
             "offset": offset,
         })
-        return parse_response(data, OddsLine)
+        return parse_response(data, BestOddsSelection)
 
     async def comparison(
         self,
