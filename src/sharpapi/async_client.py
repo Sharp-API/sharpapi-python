@@ -57,8 +57,8 @@ class AsyncSharpAPI:
             (default) sends the ``X-API-Key`` header. ``"bearer"`` sends
             ``Authorization: Bearer <key>`` instead — useful when running
             behind IAM layers, SSO, or API gateways that strip custom
-            headers. SSE streams (sync client only) always authenticate via
-            ``?api_key=`` query and are unaffected.
+            headers. SSE streams (sync client only) use the same authentication
+            header.
 
     Example::
 

@@ -2,6 +2,13 @@
 
 All notable changes to the `sharpapi` Python SDK are documented here.
 
+## 0.4.3 — Unreleased
+
+### Security
+
+- SSE authentication now stays in headers, including bearer mode, keeping API keys out of request URLs, HTTP logs, and exception traces. Stream filters and event identifiers are URL-encoded.
+- Package publishing requires approval through the protected release environment.
+
 ## 0.4.1 — 2026-06-02
 
 ### Added — structured `team_side` + `market_segment` (issue #76 / #689)
