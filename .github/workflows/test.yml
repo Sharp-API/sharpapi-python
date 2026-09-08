@@ -34,11 +34,8 @@ jobs:
       - name: Pyright
         run: pyright
 
-      # This workflow is named "Tests" but never ran any until now — `tests/` has
-      # existed since 0.3.x and CI only linted and type-checked it. #18 shipped two
-      # model/wire mismatches that a single parse of a real payload would have
-      # caught, so the fixture round-trip it asks for is only worth adding if it can
-      # actually fail the build.
+      # Run fixture-based regression tests alongside lint and type checks.
+      # These catch model/wire mismatches such as those reported in #18.
       - name: Pytest
         run: pytest -q
 

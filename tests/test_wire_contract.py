@@ -1,31 +1,21 @@
 """Model <-> wire contract, pinned against captured live payloads.
 
-Issue #18: two model/wire mismatches shipped undetected because nothing here ever
-parsed a real response.
+Issue #18 covered two model/wire mismatches:
 
-- ``MiddleSide`` declared a required ``odds: OddsValue``. The wire sends odds
-  **flat**. Every ``client.middles()`` call raised ``ValidationError`` — loud, but
-  only at runtime, in a user's process.
-- ``EVOpportunity.confidence_score`` had no alias for the wire's ``confidence``, so
-  it silently read ``None`` on every row. Consumers filtering on it got nothing and
-  no error.
+- ``MiddleSide`` required nested ``odds: OddsValue``, but the wire sends flat
+  odds fields. Every ``client.middles()`` call raised ``ValidationError``.
+- ``EVOpportunity.confidence_score`` lacked an alias for ``confidence`` and
+  returned ``None`` on every row, affecting consumers filtering on that field.
 
-The second kind is the reason these tests exist. A missing required field announces
-itself; a field that quietly never populates does not, and no amount of unit testing
-against hand-written dicts will catch it — the hand-written dict is written from the
-same wrong belief as the model.
+Captured API responses test required-field validation and silent alias failures
+against the actual wire format. Refresh fixtures in ``tests/fixtures`` when the
+API intentionally changes, then check whether model updates are required.
 
-Fixtures are real responses captured from the deployed API (``tests/fixtures``).
-Refresh them when the wire changes on purpose; a failure here means the wire moved
-and the models did not.
-
-Deliberately *not* asserted: "every declared field is populated by some payload."
-That check was written and dropped — a small fixture cannot distinguish "the SDK
-declares a field the wire never sends" from "this sample happened not to include a
-conditional field." It flagged ``sharp_odds_american``, ``is_suspended`` and the
-``*_ref`` objects, all of which are legitimately conditional. Catching the
-``confidence_score`` class generically needs the full field space, not two rows;
-until then it is pinned explicitly above.
+The suite does not assert that every declared field appears in these fixtures:
+small samples cannot distinguish unsupported fields from conditional fields.
+An earlier check flagged ``sharp_odds_american``, ``is_suspended``, and ``*_ref``
+objects, which are legitimately conditional. The ``confidence_score`` alias is
+therefore covered explicitly; broader coverage requires more complete fixtures.
 """
 
 import json
@@ -111,10 +101,9 @@ def test_ev_quality_tier_populates():
     [
         (MiddleSide, "middles_live.json", _sides),
         (EVOpportunity, "ev_live.json", lambda rows: rows),
-        # Issue #23: the guard above already existed and would have caught all
-        # five of these — it was simply never pointed at them. Every model
-        # here declared required fields the wire does not send, so the
-        # corresponding call raised ValidationError for every user.
+        # Issue #23 extended fixture validation to these five models. Each
+        # previously required fields absent from API responses, causing the
+        # corresponding calls to raise ValidationError.
         (Sport, "sports_live.json", lambda rows: rows),
         (League, "leagues_live.json", lambda rows: rows),
         (Sportsbook, "sportsbooks_live.json", lambda rows: rows),
@@ -168,15 +157,13 @@ def _satisfied_by_alias(model, field_name: str, payload: dict) -> bool:
 def test_dunder_version_matches_pyproject():
     """``__version__`` and ``pyproject.toml`` are two declarations of one fact.
 
-    They drifted: #13 bumped ``pyproject.toml`` 0.4.0 -> 0.4.1 and left
-    ``__init__.py`` at 0.4.0, so the published 0.4.1 sdist reports
-    ``sharpapi.__version__ == "0.4.0"``. PyPI is immutable, so that wrong answer is
-    permanent for 0.4.1 — this test only stops the next one.
+    Issue #13 updated ``pyproject.toml`` from 0.4.0 to 0.4.1 while leaving
+    ``__init__.py`` at 0.4.0. The immutable 0.4.1 sdist therefore reports
+    ``sharpapi.__version__ == "0.4.0"``. This test prevents future mismatches.
 
-    Compares the two *sources*, not ``importlib.metadata``. Dist metadata is only as
-    fresh as the last ``pip install``; a stale editable install reports whatever it
-    was built at (0.2.0 on this dev box), which would make this test pass in CI and
-    fail locally for a reason that has nothing to do with the bug.
+    Compare the source declarations because ``importlib.metadata`` reflects
+    the last installed distribution. Stale editable-install metadata can
+    differ from the current source version.
     """
     import sharpapi
 
@@ -270,8 +257,8 @@ def test_null_data_parses_as_empty_list():
     """List endpoints send ``"data": null`` — not ``[]`` — when nothing matches.
 
     ``raw.get("data", [])`` does not defend against this: the default only
-    fires when the key is absent, and here it is present and null. Seasonal,
-    so it hides — ``events.list(league="nba", live=True)`` fails all summer.
+    fires when the key is absent, and here it is present and null. This test
+    covers filters with no matching events.
     """
     payload = _payload("events_empty_live.json")
     assert payload["data"] is None, "recapture: this fixture must carry a null data"
