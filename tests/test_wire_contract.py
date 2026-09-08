@@ -157,15 +157,13 @@ def _satisfied_by_alias(model, field_name: str, payload: dict) -> bool:
 def test_dunder_version_matches_pyproject():
     """``__version__`` and ``pyproject.toml`` are two declarations of one fact.
 
-    They drifted: #13 bumped ``pyproject.toml`` 0.4.0 -> 0.4.1 and left
-    ``__init__.py`` at 0.4.0, so the published 0.4.1 sdist reports
-    ``sharpapi.__version__ == "0.4.0"``. PyPI is immutable, so that wrong answer is
-    permanent for 0.4.1 — this test only stops the next one.
+    Issue #13 updated ``pyproject.toml`` from 0.4.0 to 0.4.1 while leaving
+    ``__init__.py`` at 0.4.0. The immutable 0.4.1 sdist therefore reports
+    ``sharpapi.__version__ == "0.4.0"``. This test prevents future mismatches.
 
-    Compares the two *sources*, not ``importlib.metadata``. Dist metadata is only as
-    fresh as the last ``pip install``; a stale editable install reports whatever it
-    was built at (0.2.0 on this dev box), which would make this test pass in CI and
-    fail locally for a reason that has nothing to do with the bug.
+    Compare the source declarations because ``importlib.metadata`` reflects
+    the last installed distribution. Stale editable-install metadata can
+    differ from the current source version.
     """
     import sharpapi
 
@@ -259,8 +257,8 @@ def test_null_data_parses_as_empty_list():
     """List endpoints send ``"data": null`` — not ``[]`` — when nothing matches.
 
     ``raw.get("data", [])`` does not defend against this: the default only
-    fires when the key is absent, and here it is present and null. Seasonal,
-    so it hides — ``events.list(league="nba", live=True)`` fails all summer.
+    fires when the key is absent, and here it is present and null. This test
+    covers filters with no matching events.
     """
     payload = _payload("events_empty_live.json")
     assert payload["data"] is None, "recapture: this fixture must carry a null data"
