@@ -22,8 +22,7 @@ DEFAULT_BASE_URL = "https://api.sharpapi.io"
 DEFAULT_TIMEOUT = 30.0
 USER_AGENT = "sharpapi-python/0.2.5"
 
-# Supported REST authentication methods. SSE always uses ``?api_key=`` query
-# regardless of this setting because EventSource cannot set custom headers.
+# Supported authentication headers for both REST requests and SSE streams.
 AuthMethod = Literal["x-api-key", "bearer"]
 DEFAULT_AUTH_METHOD: AuthMethod = "x-api-key"
 

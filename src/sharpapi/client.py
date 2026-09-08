@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 from typing import Any
+from urllib.parse import quote, urlencode
 
 import httpx
 
@@ -54,12 +55,11 @@ class SharpAPI:
         api_key: Your SharpAPI key (e.g. ``sk_live_...``).
         base_url: Override the API base URL (defaults to production).
         timeout: HTTP timeout in seconds.
-        auth_method: How to send the API key on REST requests. ``"x-api-key"``
+        auth_method: How to send the API key on REST and SSE requests. ``"x-api-key"``
             (default) sends the ``X-API-Key`` header. ``"bearer"`` sends
             ``Authorization: Bearer <key>`` instead — useful when running
             behind IAM layers, SSO, or API gateways that strip custom
-            headers. SSE streams always authenticate via ``?api_key=`` query
-            (EventSource cannot set headers) and are unaffected.
+            headers. SSE streams use the same authentication header.
 
     Example::
 
@@ -735,12 +735,11 @@ class _StreamResource:
 
     def _build_stream(self, path: str, params: dict | None = None) -> EventStream:
         cleaned = _clean_params(params or {})
-        cleaned["api_key"] = self._client._api_key
-        query = "&".join(f"{k}={v}" for k, v in cleaned.items())
+        query = urlencode(cleaned)
         url = f"{self._client._base_url}/api/v1{path}?{query}"
         return EventStream(
             url=url,
-            headers={"X-API-Key": self._client._api_key},
+            headers=make_headers(self._client._api_key, self._client._auth_method),
         )
 
     def odds(
@@ -818,7 +817,7 @@ class _StreamResource:
         market: str | list[str] | None = None,
     ) -> EventStream:
         """Stream updates for a single event."""
-        return self._build_stream(f"/stream/events/{event_id}", {
+        return self._build_stream(f"/stream/events/{quote(event_id, safe='')}", {
             "sportsbook": sportsbook,
             "market": market,
         })
