@@ -163,7 +163,7 @@ decimal_to_american(2.5)        # 150
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.10+
 - httpx
 - pydantic v2
 

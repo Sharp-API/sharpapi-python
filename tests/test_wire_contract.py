@@ -1,31 +1,21 @@
 """Model <-> wire contract, pinned against captured live payloads.
 
-Issue #18: two model/wire mismatches shipped undetected because nothing here ever
-parsed a real response.
+Issue #18 covered two model/wire mismatches:
 
-- ``MiddleSide`` declared a required ``odds: OddsValue``. The wire sends odds
-  **flat**. Every ``client.middles()`` call raised ``ValidationError`` — loud, but
-  only at runtime, in a user's process.
-- ``EVOpportunity.confidence_score`` had no alias for the wire's ``confidence``, so
-  it silently read ``None`` on every row. Consumers filtering on it got nothing and
-  no error.
+- ``MiddleSide`` required nested ``odds: OddsValue``, but the wire sends flat
+  odds fields. Every ``client.middles()`` call raised ``ValidationError``.
+- ``EVOpportunity.confidence_score`` lacked an alias for ``confidence`` and
+  returned ``None`` on every row, affecting consumers filtering on that field.
 
-The second kind is the reason these tests exist. A missing required field announces
-itself; a field that quietly never populates does not, and no amount of unit testing
-against hand-written dicts will catch it — the hand-written dict is written from the
-same wrong belief as the model.
+Captured API responses test required-field validation and silent alias failures
+against the actual wire format. Refresh fixtures in ``tests/fixtures`` when the
+API intentionally changes, then check whether model updates are required.
 
-Fixtures are real responses captured from the deployed API (``tests/fixtures``).
-Refresh them when the wire changes on purpose; a failure here means the wire moved
-and the models did not.
-
-Deliberately *not* asserted: "every declared field is populated by some payload."
-That check was written and dropped — a small fixture cannot distinguish "the SDK
-declares a field the wire never sends" from "this sample happened not to include a
-conditional field." It flagged ``sharp_odds_american``, ``is_suspended`` and the
-``*_ref`` objects, all of which are legitimately conditional. Catching the
-``confidence_score`` class generically needs the full field space, not two rows;
-until then it is pinned explicitly above.
+The suite does not assert that every declared field appears in these fixtures:
+small samples cannot distinguish unsupported fields from conditional fields.
+An earlier check flagged ``sharp_odds_american``, ``is_suspended``, and ``*_ref``
+objects, which are legitimately conditional. The ``confidence_score`` alias is
+therefore covered explicitly; broader coverage requires more complete fixtures.
 """
 
 import json
@@ -111,10 +101,9 @@ def test_ev_quality_tier_populates():
     [
         (MiddleSide, "middles_live.json", _sides),
         (EVOpportunity, "ev_live.json", lambda rows: rows),
-        # Issue #23: the guard above already existed and would have caught all
-        # five of these — it was simply never pointed at them. Every model
-        # here declared required fields the wire does not send, so the
-        # corresponding call raised ValidationError for every user.
+        # Issue #23 extended fixture validation to these five models. Each
+        # previously required fields absent from API responses, causing the
+        # corresponding calls to raise ValidationError.
         (Sport, "sports_live.json", lambda rows: rows),
         (League, "leagues_live.json", lambda rows: rows),
         (Sportsbook, "sportsbooks_live.json", lambda rows: rows),
