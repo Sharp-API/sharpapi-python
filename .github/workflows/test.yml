@@ -2,9 +2,12 @@ name: Tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, "mergify/merge-queue/**"]
   pull_request:
     branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -23,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e ".[pandas,test]"
-          pip install ruff pyright
+          pip install ruff pyright build
 
       - name: Ruff check
         run: ruff check
@@ -38,3 +41,6 @@ jobs:
       # actually fail the build.
       - name: Pytest
         run: pytest -q
+
+      - name: Build distributions
+        run: python -m build
