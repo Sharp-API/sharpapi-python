@@ -11,7 +11,7 @@ All notable changes to the `sharpapi` Python SDK are documented here.
 
 ## 0.4.1 — 2026-06-02
 
-### Added — structured `team_side` + `market_segment` (issue #76 / #689)
+### Added — structured `team_side` + `market_segment`
 
 - `OddsLine`, `EVOpportunity`, and `ClosingOddsLine` gain two optional fields:
   - `team_side` — the raw structured side (`"home"` | `"away"` | `"draw"`)
@@ -28,16 +28,16 @@ All notable changes to the `sharpapi` Python SDK are documented here.
 
 - `OddsLine.timestamp` / `ArbitrageLeg.timestamp` documented as the **delivery /
   last-refreshed** feed-freshness timestamp (advances every ingest cycle),
-  matching OpticOdds' `timestamp` — NOT a price-last-changed time. The API now
+  rather than a price-last-changed time. The API now
   populates this field (previously always `null`). The removed
   `odds_changed_at` / `last_seen_at` / `wire_received_at` were never modeled by
-  this SDK, so no model change is needed. (SHA-1048)
+  this SDK, so no model change is needed.
 
 ### Added
 
 - `OddsLine.is_active` (bool, default `True`). `False` indicates the market is
-  suspended/closed with the price frozen — mirrors OpticOdds `locked-odds` but
-  as a queryable field. Absent on the wire is treated as `True`.
+  suspended/closed with the price frozen, exposed as a queryable field.
+  Absent on the wire is treated as `True`.
 
 ### Backward compatibility
 

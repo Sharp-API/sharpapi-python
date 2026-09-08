@@ -216,7 +216,7 @@ class OddsLine(BaseModel):
     market_type: str
     selection: str
     selection_type: str | None = None
-    # Structured side/segment axes (issue #76 / #689). team_side is the raw
+    # Structured side/segment axes. team_side is the raw
     # "home"|"away"|"draw" decomposed out of the compound selection_type vocab;
     # market_segment is the contest slice ("full_game", "1st_half", ...). Both
     # optional + additive — absent on rows the adapter didn't stamp.
@@ -233,13 +233,13 @@ class OddsLine(BaseModel):
     line: float | None = None
     event_start_time: str | None = None
     # ISO 8601 — when SharpAPI last refreshed this odd through its pipeline
-    # (advances every ingest cycle). A feed-freshness / delivery signal matching
-    # OpticOdds' `timestamp`; NOT a price-last-changed time. (SHA-1048)
+    # (advances every ingest cycle). A feed-freshness / delivery signal,
+    # rather than a price-last-changed time.
     timestamp: str | None = None
     is_live: bool = False
     # True (default) = market open and bettable; False = market suspended/closed
-    # with the price frozen (mirrors OpticOdds locked-odds). Absent on the wire
-    # is treated as True. SHA-3803.
+    # with the price frozen. Absent on the wire
+    # is treated as True.
     is_active: bool = True
     deep_link: str | None = None
     player_name: str | None = None
@@ -366,7 +366,7 @@ class EVOpportunity(BaseModel):
     detected_at: str | None = None
     external_event_id: str | None = None
     selection_id: str | None = None
-    # Structured side/segment axes (issue #76 / #689), additive + optional.
+    # Structured side/segment axes, additive + optional.
     team_side: str | None = None
     market_segment: str | None = None
     # Suspended-state (server flag EV_SUSPENDED_STATE), additive + optional. While the sharp
@@ -401,7 +401,7 @@ class ArbitrageLeg(BaseModel):
     implied_probability: float | None = None
     stake_percent: float
     # ISO 8601 last-refreshed (feed-freshness) timestamp for this leg's odd —
-    # see OddsLine.timestamp. (SHA-1048)
+    # see OddsLine.timestamp.
     timestamp: str | None = None
     external_event_id: str | None = None
     selection_id: str | None = None
@@ -716,7 +716,7 @@ class ClosingOddsLine(BaseModel):
     market_type: str
     selection: str
     selection_type: str | None = None
-    # Structured side/segment axes (issue #76 / #689), additive + optional.
+    # Structured side/segment axes, additive + optional.
     team_side: str | None = None
     market_segment: str | None = None
     odds_american: int | float
