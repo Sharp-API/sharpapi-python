@@ -113,7 +113,7 @@ for arb in arbs.data:
         print(f"  Skipping: odds may be stale ({arb.oldest_odds_age_seconds}s old)")
         continue
     if "LIVE_HIGH_PROFIT_SUSPICIOUS" in arb.warnings:
-        print(f"  Skipping: likely phantom arb")
+        print(f"  Skipping: suspicious live arbitrage opportunity")
         continue
     print(f"Actionable: {arb.profit_percent}%")
 ```
